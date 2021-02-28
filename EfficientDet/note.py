@@ -5,7 +5,14 @@ import cv2
 import sys
 import os
 import re
+import pdb
+import torch.nn as nn
 
+x = (np.arange(0, 64) + 0.5) * 8
+y = (np.arange(0, 64) + 0.5) * 8
+shift_x, shift_y = np.meshgrid(x, y)
 
-scales = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)])
-print(np.tile(scales, (5, 5)).shape)
+print(np.vstack((
+    shift_x.ravel(), shift_y.ravel(),
+    shift_x.ravel(), shift_y.ravel()
+)).transpose())
