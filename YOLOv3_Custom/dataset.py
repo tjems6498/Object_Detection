@@ -16,11 +16,11 @@ from YOLOv3_Custom.utils import (
 )
 
 
-ROOT = 'E:\\Computer Vision\\data\\custom'
+
 
 def readId():
     id = []
-    with open(ROOT+'\\train.txt', 'r') as f:
+    with open(config.ROOT+'\\train.txt', 'r') as f:
         line = f.readline()
         while line != "":
             id.append(line.split('.')[0][-6:])
@@ -49,8 +49,8 @@ class YOLODataset(Dataset):
         print(id)
         # np.loadtxt : 공백 기준으로 나누고 최소 2차원 array로 반환
         # np.roll : 첫번째 열을 4번째로 이동
-        image = np.array(Image.open(os.path.join(ROOT,"image",id+".jpg")).convert('RGB'))
-        bboxes = np.roll(np.loadtxt(fname=os.path.join(ROOT,"annotation",id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
+        image = np.array(Image.open(os.path.join(self.root,"image",id+".jpg")).convert('RGB'))
+        bboxes = np.roll(np.loadtxt(fname=os.path.join(self.root,"annotation",id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
         bboxes[:,:4] = bboxes[:,:4] - 1e-5
         bboxes = bboxes.tolist()
         # 1e-5를 빼준 이유는 albumentation에서 box transform을 할 때 박스값 중 1이 들어가면 반환될때 1이 넘어가는 이상한 오류가 있어서 이렇게 변경함.
@@ -101,7 +101,7 @@ def test():
     transform = config.train_transforms
 
     dataset = YOLODataset(
-        root=ROOT,
+        root=config.ROOT,
         anchors=anchors,
         transform=transform
     )

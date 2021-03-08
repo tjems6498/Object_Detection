@@ -23,8 +23,7 @@ PIN_MEMORY = True
 LOAD_MODEL = True
 SAVE_MODEL = True
 CHECKPOINT_FILE = "checkpoint.pth.tar"
-IMG_DIR = DATASET + "/images/"
-LABEL_DIR = DATASET + "/labels/"
+ROOT = 'E:\\Computer Vision\\data\\custom'
 
 ANCHORS = [
     [(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)],
