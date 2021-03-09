@@ -2,23 +2,38 @@ import torch
 import numpy as np
 import config
 from collections import Counter
-# a = torch.zeros((1,5,5,6))
-#
-# print(a[...,4].shape)
-# print(a[...,4:5].shape)
 
-# print(torch.arange(13).repeat(2,3,13,1).unsqueeze(-1).shape)
+'''
+노트
 
-# print(torch.tensor([-5,0,4,3]).clamp(0))
-# print(np.linspace(0,1,4))
-# print(torch.tensor(config.S).unsqueeze(1).unsqueeze(1).repeat(1,3,2))
-#
-# print(torch.tensor(config.ANCHORS) * torch.tensor(config.S).unsqueeze(1).unsqueeze(1).repeat(1,3,2))
-# print([[] for _ in range(8)])
+1. 현재 사용한 defualt Anchor box가 COCO dataset에 대한 k-means clustering에 의해 구해진 값인데 (여기서는 416으로 나눠서 Normalize된 값 사용)
+사람데이터는 vertical한 박스가 많기 때문에 여기에 맞게 다시 anchor box를 조정하는 것을 고려해볼 필요가 있을 것 같다.
 
-ground_truths = [0,0,0,0,0,1,1,2,2,3,3,4,4,4,4,4,4,4]
-a = Counter([gt for gt in ground_truths])
-print(a)
+2. albumentation이 정말 좋은 라이브러리 이지만 box augmentation에서 회전은 안되는것 같다. (내가 모르는 건가..)
 
-for key, val in a.items():
-    print(key, val)
+
+
+
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

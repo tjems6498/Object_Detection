@@ -145,16 +145,17 @@ class YOLOv3(nn.Module):
             elif isinstance(module, str):
                 if module == "S":
                     layers += [
-                        ResidualBlock(in_channels, use_residual=False, num_repeats=1),
+                        ResidualBlock(in_channels, use_residual=False, num_repeats=1),  # 1024
                         CNNBlock(in_channels, in_channels//2, kernel_size=1),
                         ScalePrediction(in_channels//2, num_classes=self.num_classes),
                     ]  # 결국 Convolution 4번하고 마지막 conv로 predict feature_map을 구함
-                    in_channels = in_channels // 2
+
+                    in_channels = in_channels // 2  # 512
 
                 elif module == "U":
                     layers.append(nn.Upsample(scale_factor=2),)  # default = nearest
-                    # pdb.set_trace()
-                    in_channels = in_channels * 3
+                    pdb.set_trace()
+                    in_channels = in_channels * 3  # 768
 
         return layers
 
