@@ -54,18 +54,19 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 
 
 def main():
-    model = YOLOv3(num_classes=config.CLASSES).to(config.DEVICE)
+    model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
+
     optimizer = optim.Adam(
-        model.parameters(), lr = config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY
+        model.parameters(), lr=config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY
     )
     loss_fn = YOLOLoss()
     scaler = torch.cuda.amp.GradScaler()  # FP16
 
-    train_loader, train_eval_loader = get_loaders()  # test loader 추가해야함
+    train_loader, test_loader, train_eval_loader = get_loaders()  # test loader 추가해야함
 
     if config.LOAD_MODEL:
         load_checkpoint(
-            config.CHECKPOINT_FILE, model, optimizer, config.LEARNING_RATE
+            "darknet53_weights_pytorch.pth", model, optimizer, config.LEARNING_RATE
         )
 
     scaled_anchors = (
@@ -83,6 +84,30 @@ def main():
         # check_class_accuracy(model, train_eval_loader, threshold=config.CONF_THRESHOLD)
         # print("On Train loader:")
         # check_class_accuracy(model, train_loader, threshold=config.CONF_THRESHOLD)
+
+        if epoch % 10 == 0 and epoch > 0:
+            print("On Test loader:")
+            check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
+
+            pred_boxes, true_boxes = get_evaluation_bboxes(
+                test_loader,
+                model,
+                iou_threshold=config.NMS_IOU_THRESH,
+                anchors=config.ANCHORS,
+                threshold=config.CONF_THRESHOLD,
+            )
+            mapval = mean_average_precision(
+                pred_boxes,
+                true_boxes,
+                iou_threshold=config.MAP_IOU_THRESH,
+                box_format="midpoint",
+                num_classes=config.NUM_CLASSES,
+            )
+            print(f"MAP: {mapval.item()}")
+
+
+if __name__ == "__main__":
+    main()
 
 
 

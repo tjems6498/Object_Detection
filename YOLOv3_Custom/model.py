@@ -83,7 +83,7 @@ class ScalePrediction(nn.Module):
         super().__init__()
         self.pred = nn.Sequential(
             CNNBlock(in_channels, in_channels*2, kernel_size=3, padding=1),
-            CNNBlock(in_channels*2, (num_classes + 5)*3, bn_act=False, kernel_size=1),  # predict feature_map 에서는 batch_norm 사용 하지 않음
+            CNNBlock(2 * in_channels, (num_classes + 5) * 3, bn_act=False, kernel_size=1),  # predict feature_map 에서는 batch_norm 사용 하지 않음
         )
         self.num_classes = num_classes
 
@@ -96,7 +96,7 @@ class ScalePrediction(nn.Module):
 
 
 class YOLOv3(nn.Module):
-    def __init__(self, in_channels=3, num_classes=20):
+    def __init__(self, in_channels=3, num_classes=4):
         super().__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
@@ -154,7 +154,7 @@ class YOLOv3(nn.Module):
 
                 elif module == "U":
                     layers.append(nn.Upsample(scale_factor=2),)  # default = nearest
-                    pdb.set_trace()
+                    # pdb.set_trace()
                     in_channels = in_channels * 3  # 768
 
         return layers

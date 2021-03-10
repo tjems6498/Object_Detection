@@ -18,9 +18,9 @@ from YOLOv3_Custom.utils import (
 
 
 
-def readId():
+def readId(root):
     id = []
-    with open(config.ROOT+'\\train.txt', 'r') as f:
+    with open(root+'\\id.txt', 'r') as f:
         line = f.readline()  # 한 줄 읽기
         while line != "":
             id.append(line.split('.')[0][-6:])  # id번호만 parsing
@@ -30,7 +30,7 @@ def readId():
 
 class YOLODataset(Dataset):
     def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None):
-        self.annotations = readId()
+        self.annotations = readId(root)
         self.root = root
         self.image_size = image_size
         self.transform = transform
@@ -46,7 +46,6 @@ class YOLODataset(Dataset):
 
     def __getitem__(self, idx):
         id = self.annotations[idx]
-        print(id)
 
         image = np.array(Image.open(os.path.join(self.root,"image",id+".jpg")).convert('RGB'))
         # 공백 기준으로 나눔 + 최소 2차원 array로 반환
@@ -116,7 +115,7 @@ def test():
     transform = config.train_transforms
 
     dataset = YOLODataset(
-        root=config.ROOT,
+        root=config.TEST_DIR,
         anchors=anchors,
         transform=transform
     )

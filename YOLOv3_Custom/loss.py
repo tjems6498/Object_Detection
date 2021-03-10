@@ -67,7 +67,7 @@ class YOLOLoss(nn.Module):
         #   FOR CLASS LOSS   #
         # ================== #
 
-        class_loss = self.bce(
+        class_loss = self.entropy(
             (predictions[...,5:][obj]), (target[..., 5][obj].long())
         )
 

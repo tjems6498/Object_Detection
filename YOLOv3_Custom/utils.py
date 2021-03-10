@@ -97,7 +97,7 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format='corners'):
 
 
 def mean_average_precision(
-        pred_boxes, true_boxes, iou_threshold=0.5, box_format='midpoint', num_classes=config.DEVICE
+        pred_boxes, true_boxes, iou_threshold=0.5, box_format='midpoint', num_classes=4
 ):
     """
     This function calculates mean average precision (mAP)
@@ -368,13 +368,25 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     torch.save(checkpoint, filename)
 
 
-
-
-def load_checkpoint(checkpoing_file, model, optimizer, lr):
+# 'layers.14.bn.num_batches_tracked' 341
+# 20 41.4
+# 35 34.1
+def load_checkpoint(checkpoint_file, model, optimizer, lr):
     print("=> Loading checkpoint")
-    checkpoint = torch.load(checkpoing_file, map_location=config.DEVICE)
-    model.load_state_dict(checkpoint['state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer'])
+
+    # state_dict = model.state_dict()
+    # param_names = list(state_dict.keys())
+    #
+    checkpoint = torch.load(checkpoint_file, map_location=config.DEVICE)
+    print(len(checkpoint.keys()))
+    # pretrained_state_dict = checkpoint['state_dict']
+    # pretrained_param_names = list(pretrained_state_dict.keys())
+    #
+    # for i, param in enumerate(param_names):
+    #     state_dict[param] = pretrained_state_dict[pretrained_param_names[i]]
+
+    model.load_state_dict(checkpoint, strict=False)
+    # optimizer.load_state_dict(checkpoint['optimizer'])
 
     # If we don't do this then it will just have learningrate of old checkpoint
     # and it will lead to many hours of debugging
@@ -390,7 +402,7 @@ def get_loaders():
 
     IMAGE_SIZE = config.IMAGE_SIZE
     train_dataset = YOLODataset(
-        root=config.ROOT,
+        root=config.TRAIN_DIR,
         anchors=config.ANCHORS,
         S = [IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
         transform=config.train_transforms
@@ -404,8 +416,23 @@ def get_loaders():
         drop_last=False,
     )
 
+    test_dataset = YOLODataset(
+        root=config.TEST_DIR,
+        anchors=config.ANCHORS,
+        S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
+        transform=config.test_transforms
+    )
+    test_loader = DataLoader(
+        dataset=test_dataset,
+        batch_size=config.BATCH_SIZE,
+        num_workers=config.NUM_WORKERS,
+        pin_memory=config.PIN_MEMORY,
+        shuffle=False,
+        drop_last=False,
+    )
+
     train_eval_dataset = YOLODataset(
-        root=config.ROOT,
+        root=config.TRAIN_DIR,
         anchors=config.ANCHORS,
         S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
         transform=config.test_transforms
@@ -419,14 +446,7 @@ def get_loaders():
         drop_last=False,
     )
 
-    return train_loader, train_eval_loader
-
-
-
-
-
-
-
+    return train_loader, test_loader, train_eval_loader
 
 
 
