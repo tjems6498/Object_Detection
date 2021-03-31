@@ -404,7 +404,7 @@ def get_loaders():
     train_dataset = YOLODataset(
         root=config.TRAIN_DIR,
         anchors=config.ANCHORS,
-        S = [IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
+        S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
         transform=config.train_transforms
     )
     train_loader = DataLoader(

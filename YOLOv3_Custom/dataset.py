@@ -16,8 +16,6 @@ from YOLOv3_Custom.utils import (
 )
 
 
-
-
 def readId(root):
     id = []
     with open(root+'\\id.txt', 'r') as f:
