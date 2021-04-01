@@ -24,9 +24,9 @@ PIN_MEMORY = True
 LOAD_MODEL = False
 SAVE_MODEL = True
 CHECKPOINT_FILE = "checkpoint.pth.tar"
-TRAIN_DIR = ''
-TEST_DIR = ''
-CLASSES = None
+TRAIN_DIR = 'E:\\Computer Vision\\data\\custom\\train'
+TEST_DIR = 'E:\\Computer Vision\\data\\custom\\test'
+
 ANCHORS = [
     [(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)],
     [(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)],
@@ -78,7 +78,7 @@ test_transforms = A.Compose(
 )
 
 
-
+CLASSES = ['man','woman','kid','elder']
 
 
 

@@ -1,5 +1,5 @@
-train: ../train/images
-val: ../valid/images
+train: ./custom/train/images
+val: ./custom/valid/images
 
 nc: 4
 names: ['man', 'woman', 'kid','elder']
