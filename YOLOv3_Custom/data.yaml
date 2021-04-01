@@ -1,5 +1,5 @@
-train: ./custom/train
-val: ./custom/test
+train: ../../custom/train
+val: ../../custom/test
 
 nc: 4
 names: ['man', 'woman', 'kid','elder']
