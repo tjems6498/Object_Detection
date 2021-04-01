@@ -18,7 +18,12 @@ from util import (
 
 def readId(root):
     id = []
-    with open(root+'\\id.txt', 'r') as f:
+    if root[0] == 'E':
+        root = root+'\\id.txt'
+    else:
+        root = root+'/id.txt'
+
+    with open(root, 'r') as f:
         line = f.readline()  # 한 줄 읽기
         while line != "":
             id.append(line.split('.')[0][-6:])  # id 번호만 parsing
