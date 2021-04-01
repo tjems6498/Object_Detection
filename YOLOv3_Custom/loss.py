@@ -8,7 +8,7 @@ import random
 import torch
 import torch.nn as nn
 
-from YOLOv3_Custom.utils import intersection_over_union
+from util import intersection_over_union
 
 class YOLOLoss(nn.Module):
     def __init__(self):

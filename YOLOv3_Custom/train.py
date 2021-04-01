@@ -6,7 +6,7 @@ import yaml
 
 from model import YOLOv3
 from tqdm import tqdm
-from YOLOv3_Custom.utils import (
+from util import (
     mean_average_precision,
     cells_to_bboxes,
     get_evaluation_bboxes,
