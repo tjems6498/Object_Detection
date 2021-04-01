@@ -21,7 +21,7 @@ def readId(root):
     with open(root+'\\id.txt', 'r') as f:
         line = f.readline()  # 한 줄 읽기
         while line != "":
-            id.append(line.split('.')[0][-6:])  # id번호만 parsing
+            id.append(line.split('.')[0][-6:])  # id 번호만 parsing
             line = f.readline()
     return id
 
@@ -45,21 +45,21 @@ class YOLODataset(Dataset):
     def __getitem__(self, idx):
         id = self.annotations[idx]
 
-        image = np.array(Image.open(os.path.join(self.root,"image",id+".jpg")).convert('RGB'))
+        image = np.array(Image.open(os.path.join(self.root, "image", id+".jpg")).convert('RGB'))
         # 공백 기준으로 나눔 + 최소 2차원 array로 반환
         # np.roll : 첫번째 원소를 4칸 밀고 나머지를 앞으로 끌어옴  (0 ,1 ,2 ,3 ,4) -> (1, 2, 3, 4, 0)
         # 즉 label값을 0번째에서 4번째로 이동
-        bboxes = np.roll(np.loadtxt(fname=os.path.join(self.root,"annotation",id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
+        bboxes = np.roll(np.loadtxt(fname=os.path.join(self.root, "annotation", id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
         bboxes[:,:4] = bboxes[:,:4] - 1e-5
-        bboxes = bboxes.tolist()
-        # 1e-5를 빼준 이유는 albumentation에서 box transform을 할 때 bbox 값에 1이 들어가면 반환될때 1이 넘어가는 이상한 오류가 있어서 이렇게 변경함.
+        # 1e-5를 빼준 이유는 albumentation에서 box transform을 할 때 bbox 값에 1이 들어가면 반환될때 1이 넘어가는 오류가 있어서 이렇게 변경함.
+        bboxes = bboxes.tolist()  # 2차원 리스트
 
         if self.transform:
             augmentations = self.transform(image=image, bboxes=bboxes)
             image = augmentations['image']
             bboxes = augmentations['bboxes']
         # Below assumes 3 scale predictions (as paper) and same num of anchors per scale
-        # dim [(3,13,13,6),(3,26,26,6)(3,52,52,6)]  6 : (p_o, x, y, w, h, class)
+        # dim [(3,13,13,6),(3,26,26,6)(3,52,52,6)]  6 : (object_prob, x, y, w, h, class)
         targets = [torch.zeros((self.num_anchors//3, S, S, 6)) for S in self.S]
 
         for box in bboxes:  # 각 스케일 셀 별 하나의 anchor box scale에 target값을 설정해주는 로직
@@ -69,8 +69,8 @@ class YOLODataset(Dataset):
             x, y, width, height, class_label = box
             has_anchor = [False] * 3  # [False, False, False]
             for anchor_idx in anchor_indices:  # true bbox와 iou가 큰 앵커 부터
-                scale_idx = anchor_idx // self.num_anchors_per_scale  # anchor_idx가 8이면 scale_idx가 2가되고 52x52를 의미  (0, 1, 2)
-                anchor_on_scale = anchor_idx % self.num_anchors_per_scale  # 3개중 사용할 스케일  (0, 1, 2)
+                scale_idx = anchor_idx // self.num_anchors_per_scale  # anchor_idx가 8이면 scale_idx가 2가되고 52x52를 의미 (0, 1, 2)
+                anchor_on_scale = anchor_idx % self.num_anchors_per_scale  # 각 그리드스케일 에서 사용할 3개의 anchor 스케일 (0, 1, 2)
                 S = self.S[scale_idx]  # anchor_idx가 8이면 52
 
                 # 만약 x,y가 0.5라면 물체가 이미지 중앙에 있다는 의미,
@@ -118,6 +118,7 @@ def test():
         transform=transform
     )
     S = [13, 26, 52]
+
     scaled_anchors = torch.tensor(anchors) * torch.tensor(S).unsqueeze(1).unsqueeze(1).repeat(1,3,2)  # (3, 3, 2)
     '''
     scaled_anchors
@@ -146,7 +147,7 @@ def test():
                 y[i], is_preds=False, S=y[i].shape[2], anchors=anchor
             )[0]  # batch 제외 (num_anchors * S * S, 6)
 
-        boxes = nms(boxes, iou_threshold=1, threshold=0.7, box_format='midpoint')  # 지금은 test라서 의미없음
+        boxes = nms(boxes, iou_threshold=1, threshold=0.7, box_format='midpoint')
         print(boxes)
         plot_image(x[0].permute(1,2,0).to('cpu'), boxes)
 

@@ -52,15 +52,17 @@ def cells_to_bboxes(predictions, anchors, S, is_preds=True):
         best_class = predictions[..., 5:6]
 
 
-    cell_indices = (torch.arange(S)
-                    .repeat(BATCH_SIZE,3,S,1)
-                    .unsqueeze(-1)
+    cell_indices = (torch.arange(S)  # (13,)
+                    .repeat(BATCH_SIZE,3,S,1)  # (batch, 3, S, S)
+                    .unsqueeze(-1)  #
                     .to(predictions.device))  # (Batch, 3, S, S, 1)  -> x 방향으로 0,1,2,3,4,5,6,7~
+
     # 중심을 가진 셀에 대해 0~1 값이었던 x,y를 현재 셀 스케일 전체에 대한 Normalize 좌표로 변환 (0~1)
     # 거기에 +로 box prediction에서 Cx, Cy를 미리 더해놓음
     x = 1 / S * (box_predictions[..., 0:1] + cell_indices)
     y = 1 / S * (box_predictions[..., 1:2] + cell_indices.permute(0,1,3,2,4))  # y방향으로 바꿔주고 더함
-    w_h = 1 / S * box_predictions[..., 2:4]  # 절대좌표 -> Normalize
+    w_h = 1 / S * box_predictions[..., 2:4]  # predict w,h는 데이터셋에서 넘어올때부터 스케일에서의 절대좌표 -> Normalize
+
     converted_bboxes = torch.cat((best_class,scores,x,y,w_h), dim=-1).reshape(BATCH_SIZE, num_anchors * S * S, 6)
     return converted_bboxes.tolist()
 
