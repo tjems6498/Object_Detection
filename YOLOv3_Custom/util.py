@@ -79,7 +79,6 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format='corners'):
     :return:
         list: bboxes agter performing NMS given a specific IoU threshold
     '''
-
     assert type(bboxes) == list
     # input bboxes 값 확인하기
     bboxes = [box for box in bboxes if box[1] > threshold]
@@ -319,7 +318,7 @@ def get_evaluation_bboxes(
 
             train_idx += 1
     model.train()
-    pdb.set_trace()
+
     return all_pred_boxes, all_true_boxes  # [[batch_idx, class_idx, o_p, x, y, w, h],[]...]
 
 

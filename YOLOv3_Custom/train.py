@@ -127,6 +127,7 @@ if __name__ == "__main__":
 
     with open('data.yaml') as f:
         data = yaml.load(f, Loader=yaml.FullLoader)
+
     config.TRAIN_DIR = data['train']
     config.TEST_DIR = data['val']
     config.NUM_CLASSES = data['nc']
