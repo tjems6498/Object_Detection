@@ -88,7 +88,7 @@ class YOLODataset(Dataset):
                     targets[scale_idx][anchor_on_scale, i, j, 0] = 1  # object probability= 1
                     # pdb.set_trace()
                     x_cell, y_cell = S * x - j, S * y - i  # 중심점이 있는 셀에서의 위치 0~1  (위에서 i,j구할때 int를 씌우면서 사라진 소수점 값이라고 생각하면 됨)
-                    width_cell, height_cell = (width * S, height * S)  # 해당 스케일(13x13 or 26x26 or 52x52)에서의 상대 비율로 나타냄 (당연히 1보다 클 수있음)
+                    width_cell, height_cell = (width * S, height * S)  # 해당 스케일(13x13 or 26x26 or 52x52)에서의 비율로 나타냄 (당연히 1보다 클 수있음)
                     box_coordinates = torch.tensor([x_cell, y_cell, width_cell, height_cell])
                     targets[scale_idx][anchor_on_scale, i, j, 1:5] = box_coordinates
                     targets[scale_idx][anchor_on_scale, i, j, 5] = int(class_label)  # class_label이 float으로 되어있음

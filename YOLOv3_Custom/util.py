@@ -31,7 +31,7 @@ def iou_width_height(boxes1, boxes2):
 def cells_to_bboxes(predictions, anchors, S, is_preds=True):
     '''
     :param predictions: tensor of size (N, 3, S, S, num_classes+5)
-    :param anchors: the anchors used for the predictions
+    :param anchors: the anchors used for the predictions  (0~1) x S
     :param S: the number of cells the image is deivided in on the width and height
     :param is_preds: whether the input is predictions or the true bounding boxes
     :return: converted_bboxes: the converted boxes of sizes list(N, num_anchorsxSxS, 1+5) with class index,
@@ -42,11 +42,11 @@ def cells_to_bboxes(predictions, anchors, S, is_preds=True):
     box_predictions = predictions[..., 1:5]
     if is_preds:
         anchors = anchors.reshape(1, len(anchors), 1, 1, 2)  # 1,3,1,1,2  broad casting
-        box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])  # sigma(tx), sigma(tw)
+        box_predictions[..., 0:2] = torch.sigmoid(box_predictions[..., 0:2])  # sigmoid(tx), sigmoid(tw)
         box_predictions[..., 2:] = torch.exp(box_predictions[..., 2:]) * anchors  # e(tw) * pw
         scores = torch.sigmoid(predictions[..., 0:1])
         best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1)  # 아래서 concat하기 위해 unsqueeze 사용
-
+        # best_class: (n, 3, 13, 13) -> (n, 3, 13, 13, 1)
     else:
         scores = predictions[..., 0:1]
         best_class = predictions[..., 5:6]
@@ -58,10 +58,10 @@ def cells_to_bboxes(predictions, anchors, S, is_preds=True):
                     .to(predictions.device))  # (Batch, 3, S, S, 1)  -> x 방향으로 0,1,2,3,4,5,6,7~
 
     # 중심을 가진 셀에 대해 0~1 값이었던 x,y를 현재 셀 스케일 전체에 대한 Normalize 좌표로 변환 (0~1)
-    # 거기에 +로 box prediction에서 Cx, Cy를 미리 더해놓음
+
     x = 1 / S * (box_predictions[..., 0:1] + cell_indices)
     y = 1 / S * (box_predictions[..., 1:2] + cell_indices.permute(0,1,3,2,4))  # y방향으로 바꿔주고 더함
-    w_h = 1 / S * box_predictions[..., 2:4]  # predict w,h는 데이터셋에서 넘어올때부터 스케일에서의 절대좌표 -> Normalize
+    w_h = 1 / S * box_predictions[..., 2:4]
 
     converted_bboxes = torch.cat((best_class,scores,x,y,w_h), dim=-1).reshape(BATCH_SIZE, num_anchors * S * S, 6)
     return converted_bboxes.tolist()
@@ -289,15 +289,15 @@ def get_evaluation_bboxes(
             predictions = model(x)
 
         batch_size = x.shape[0]
-        bboxes = [[] for _ in range(batch_size)]  # 각 배치리스트마다 3개의 스케일에 대한 예측값이 들어감
+        bboxes = [[] for _ in range(batch_size)]  # 각 리스트마다 3개의 스케일에 대한 예측값이 들어감
         for i in range(3):
             S = predictions[i].shape[2]
             anchor = torch.tensor([*anchors[i]]).to(device) * S  # 앞에*을 붙여서 리스트를 벗고 들어감 -> tenor변환 하면서 차원하나 축소효과
             boxes_scale_i = cells_to_bboxes(
                 predictions[i], anchor, S=S, is_preds=True
             )  # 해당 스케일의 예측값을 t에서 b로 변환하고 (batch, SxSx3, 6)으로 차원변경
-            for idx, (box) in enumerate(boxes_scale_i): # 배치만큼
-                bboxes[idx] += box
+            for idx, (box) in enumerate(boxes_scale_i):  # 배치만큼
+                bboxes[idx] += box  # ex) 0번째 리스트에 0번째 이미지에 대한 예측 정보를 담음
 
         # 정답에 대한 변환값은 아무 스케일 1개에서 가져오면 됨
         true_bboxes = cells_to_bboxes(labels[2], anchor, S=S, is_preds=False)  # 52 x 52 스케일
@@ -313,12 +313,13 @@ def get_evaluation_bboxes(
             for nms_box in nms_boxes:
                 all_pred_boxes.append([train_idx] + nms_box)  # 각 nms_box list에 0번째에 batch index 추가해서 append
 
-            for box in true_bboxes:
-                if box[1] > threshold:
+            for box in true_bboxes[idx]:
+                if box[1] > threshold:  # score가 threshold보다 큰것. 즉 정답의 정보만 담는다는 의미
                     all_true_boxes.append([train_idx] + box)
 
             train_idx += 1
     model.train()
+    pdb.set_trace()
     return all_pred_boxes, all_true_boxes  # [[batch_idx, class_idx, o_p, x, y, w, h],[]...]
 
 
@@ -346,7 +347,7 @@ def check_class_accuracy(model, loader, threshold):
             )
             tot_class_preds += torch.sum(obj)
 
-            obj_preds = torch.sigmoid(out[i][..., 0]) > threshold
+            obj_preds = torch.sigmoid(out[i][..., 0]) > threshold  # 0.6
             correct_obj += torch.sum(obj_preds[obj] == y[i][..., 0][obj])
             tot_obj += torch.sum(obj)
             correct_noobj += torch.sum(obj_preds[noobj] == y[i][..., 0][noobj])
@@ -449,8 +450,6 @@ def get_loaders():
     )
 
     return train_loader, test_loader, train_eval_loader
-
-
 
 
 def seed_everything(seed=42):
