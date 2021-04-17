@@ -124,7 +124,7 @@ if __name__ == "__main__":
     # parser.add_argument('--')
     opt = parser.parse_args()
 
-    if config.BATCH_SIZE > 16:  # colab에서만
+    if opt.batch_size > 16:  # colab에서만
         with open('data.yaml') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
 
