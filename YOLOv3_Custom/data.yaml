@@ -1,5 +1,5 @@
-train: ../../custom/train
-val: ../../custom/test
+train: ../../fruit_yolov3/train
+val: ../../fruit_yolov3/valid
 
-nc: 4
-names: ['man', 'woman', 'kid','elder']
+nc: 11
+names: ['apple', 'orange','pear','watermelon','durian','lemon','grapes','pineapple','dragon fruit','oriental melon','melon']

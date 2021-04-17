@@ -1,11 +1,10 @@
 import config
 import numpy as np
 import os
-import pandas as pd
 import torch
 import pdb
-
-from PIL import Image, ImageFile
+import cv2
+from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 
 from util import (
@@ -17,23 +16,15 @@ from util import (
 
 
 def readId(root):
-    id = []
-    if root[0] == 'E':
-        root = root+'\\id.txt'
-    else:
-        root = root+'/id.txt'
-
-    with open(root, 'r') as f:
-        line = f.readline()  # 한 줄 읽기
-        while line != "":
-            id.append(line.split('.')[0][-6:])  # id 번호만 parsing
-            line = f.readline()
-    return id
+    root = os.path.join(root, 'images')
+    img_ids = os.listdir(root)
+    ids = [i.split('.')[0] for i in img_ids]
+    return ids
 
 
 class YOLODataset(Dataset):
     def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None):
-        self.annotations = readId(root)
+        self.ids = readId(root)
         self.root = root
         self.image_size = image_size
         self.transform = transform
@@ -45,16 +36,21 @@ class YOLODataset(Dataset):
         self.ignore_iou_thresh = 0.5
 
     def __len__(self):
-        return len(self.annotations)
+        return len(self.ids)
 
     def __getitem__(self, idx):
-        id = self.annotations[idx]
+        id = self.ids[idx]
 
-        image = np.array(Image.open(os.path.join(self.root, "image", id+".jpg")).convert('RGB'))
+        # image = np.array(Image.open(os.path.join(self.root, "images", id+".jpg")).convert('RGB'))
+        try:
+            image = cv2.cvtColor(cv2.imread(os.path.join(self.root, "images", id+".jpg")), cv2.COLOR_BGR2RGB)
+        except:
+            print(os.path.join(self.root, "images", id+".jpg"))
+
         # 공백 기준으로 나눔 + 최소 2차원 array로 반환
         # np.roll : 첫번째 원소를 4칸 밀고 나머지를 앞으로 끌어옴  (0 ,1 ,2 ,3 ,4) -> (1, 2, 3, 4, 0)
         # 즉 label값을 0번째에서 4번째로 이동
-        bboxes = np.roll(np.loadtxt(fname=os.path.join(self.root, "annotation", id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
+        bboxes = np.roll(np.loadtxt(fname=os.path.join(self.root, "labels", id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
         bboxes[:,:4] = bboxes[:,:4] - 1e-5
         # 1e-5를 빼준 이유는 albumentation에서 box transform을 할 때 bbox 값에 1이 들어가면 반환될때 1이 넘어가는 오류가 있어서 이렇게 변경함.
         bboxes = bboxes.tolist()  # 2차원 리스트
@@ -118,7 +114,7 @@ def test():
     transform = config.train_transforms
 
     dataset = YOLODataset(
-        root=config.TEST_DIR,
+        root=config.VAL_DIR,
         anchors=anchors,
         transform=transform
     )

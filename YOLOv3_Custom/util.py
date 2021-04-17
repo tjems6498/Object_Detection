@@ -91,6 +91,7 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format='corners'):
         bboxes = [box for box in bboxes if box[0] != chosen_box[0] or intersection_over_union(
                     torch.tensor(box[2:]),
                     torch.tensor(chosen_box[2:]),
+
                     box_format=box_format) < iou_threshold]
 
         bboxes_after_nms.append(chosen_box)
@@ -419,7 +420,7 @@ def get_loaders():
     )
 
     test_dataset = YOLODataset(
-        root=config.TEST_DIR,
+        root=config.VAL_DIR,
         anchors=config.ANCHORS,
         S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
         transform=config.test_transforms
@@ -429,7 +430,7 @@ def get_loaders():
         batch_size=config.BATCH_SIZE,
         num_workers=config.NUM_WORKERS,
         pin_memory=config.PIN_MEMORY,
-        shuffle=False,
+        shuffle=True,
         drop_last=False,
     )
 

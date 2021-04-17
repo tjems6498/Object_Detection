@@ -54,7 +54,6 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         loop.set_postfix(loss=mean_loss)
 
 
-
 def main():
     model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
 
@@ -112,9 +111,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
-    parser.add_argument('--batch-size', type=int, default=16, help='total batch size for all GPUs')
+    parser.add_argument('--batch-size', type=int, default=32, help='total batch size for all GPUs')
     # parser.add_argument('--img-size', type=int, default=416, help='[train, test] image sizes')
-    # parser.add_argument('--num-classes', type=int, default=4, help='number of classes')
+    # parser.add_argument('--num-classes', type=int, default=11, help='number of classes')
     # parser.add_argument('--lr', type=float, default=3e-5, help='initial learning rate')
     # parser.add_argument('--weight-decay', type=float, default=1e-4, help='l2 normalization')
     # parser.add_argument('--epochs', type=int, default=300, help='number of epochs')
@@ -125,14 +124,15 @@ if __name__ == "__main__":
     # parser.add_argument('--')
     opt = parser.parse_args()
 
-    with open('data.yaml') as f:
-        data = yaml.load(f, Loader=yaml.FullLoader)
+    if config.BATCH_SIZE > 16:  # colab에서만
+        with open('data.yaml') as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
 
-    config.TRAIN_DIR = data['train']
-    config.TEST_DIR = data['val']
-    config.NUM_CLASSES = data['nc']
-    config.CLASSES = data['names']
-    config.BATCH_SIZE = opt.batch_size
+        config.TRAIN_DIR = data['train']
+        config.VAL_DIR = data['val']
+        config.NUM_CLASSES = data['nc']
+        config.CLASSES = data['names']
+        config.BATCH_SIZE = opt.batch_size
 
     main()
 

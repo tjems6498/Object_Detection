@@ -8,11 +8,12 @@ from util import seed_everything
 DATASET = 'PASCAL_VOC'
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-seed_everything()  # If you want deterministic behavior
+seed_everything()  # deterministic behavior
 NUM_WORKERS = 4
 BATCH_SIZE = 2
 IMAGE_SIZE = 416
-NUM_CLASSES = 4
+NUM_CLASSES = 11
+CLASSES = ['apple', 'orange','pear','watermelon','durian','lemon','grapes','pineapple','dragon fruit','oriental melon','melon']
 LEARNING_RATE = 3e-5
 WEIGHT_DECAY = 1e-4
 NUM_EPOCHS = 100
@@ -24,15 +25,14 @@ PIN_MEMORY = True
 LOAD_MODEL = False
 SAVE_MODEL = True
 CHECKPOINT_FILE = "checkpoint.pth.tar"
-TRAIN_DIR = 'E:\\Computer Vision\\data\\custom\\train'
-TEST_DIR = 'E:\\Computer Vision\\data\\custom\\test'
+TRAIN_DIR = 'E:\\Computer Vision\\data\\project\\fruit_yolov3\\train'
+VAL_DIR = 'E:\\Computer Vision\\data\\project\\fruit_yolov3\\valid'
 
 ANCHORS = [
     [(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)],
     [(0.07, 0.15), (0.15, 0.11), (0.14, 0.29)],
     [(0.02, 0.03), (0.04, 0.07), (0.08, 0.06)],
 ]  # Note these have been rescaled to be between [0, 1]
-
 
 scale = 1.1
 train_transforms = A.Compose(
@@ -44,7 +44,7 @@ train_transforms = A.Compose(
             border_mode=cv2.BORDER_CONSTANT,
         ),
         A.RandomCrop(width=IMAGE_SIZE, height=IMAGE_SIZE),
-        A.ColorJitter(brightness=0.6, contrast=0.6, saturation=0.6, hue=0.6, p=0.4),
+        # A.ColorJitter(brightness=0.6, contrast=0.6, saturation=0.6, hue=0.6, p=0.4),
         A.OneOf(
             [
                 A.ShiftScaleRotate(
@@ -55,11 +55,12 @@ train_transforms = A.Compose(
             p=1.0,
         ),
         A.HorizontalFlip(p=0.5),
+        A.VerticalFlip(p=0.2),
         A.Blur(p=0.1),
-        A.CLAHE(p=0.1),  # 이미지가 뭔가 진해지고 선명해짐 / Doc: Apply Contrast Limited Adaptive Histogram Equalization
-        A.Posterize(p=0.1),
-        A.ToGray(p=0.1),
-        A.ChannelShuffle(p=0.05),
+        # A.CLAHE(p=0.1),  # 이미지가 뭔가 진해지고 선명해짐 / Doc: Apply Contrast Limited Adaptive Histogram Equalization
+        # A.Posterize(p=0.1),
+        # A.ToGray(p=0.1),
+        # A.ChannelShuffle(p=0.05),
         A.Normalize(mean=[0, 0, 0], std=[1, 1, 1], max_pixel_value=255,),
         ToTensorV2(),
     ],
@@ -78,7 +79,7 @@ test_transforms = A.Compose(
 )
 
 
-CLASSES = ['man','woman','kid','elder']
+
 
 
 
