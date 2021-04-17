@@ -40,12 +40,11 @@ class YOLODataset(Dataset):
 
     def __getitem__(self, idx):
         id = self.ids[idx]
-
-        # image = np.array(Image.open(os.path.join(self.root, "images", id+".jpg")).convert('RGB'))
         try:
-            image = cv2.cvtColor(cv2.imread(os.path.join(self.root, "images", id+".jpg")), cv2.COLOR_BGR2RGB)
+            image = cv2.imread(os.path.join(self.root, "images", id + ".jpg"))
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         except:
-            print(os.path.join(self.root, "images", id+".jpg"))
+            image = np.array(Image.open(os.path.join(self.root, "images", id+".jpg")).convert('RGB'))
 
         # 공백 기준으로 나눔 + 최소 2차원 array로 반환
         # np.roll : 첫번째 원소를 4칸 밀고 나머지를 앞으로 끌어옴  (0 ,1 ,2 ,3 ,4) -> (1, 2, 3, 4, 0)

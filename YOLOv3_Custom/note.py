@@ -1,23 +1,10 @@
-# import yaml
-#
-# with open('data.yaml') as f:
-#     data = yaml.load(f, Loader=yaml.FullLoader)
-#
-# print(data['train'])
-# print(data['val'])
-# print(data['nc'])
-# print(data['names'])
+import os
+import cv2
+import numpy as np
+from PIL import Image
 
+# img = cv2.imread('E:\\Computer Vision\\data\\project\\fruit_yolov3\\train\\images\\2323.jpg')
+# print(img.shape)
 
-import torch
-
-predictions = torch.randn((2,3, 13, 13, 9))
-
-best_class = torch.argmax(predictions[..., 5:], dim=-1).unsqueeze(-1)
-print(best_class.shape)
-
-
-
-
-
-
+img = np.array(Image.open('E:\\Computer Vision\\data\\project\\fruit_yolov3\\train\\images\\2323.jpg').convert('RGB'))
+print(img.shape)
