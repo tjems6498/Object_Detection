@@ -84,7 +84,7 @@ def main():
 
     best_map = 0
     for epoch in range(config.NUM_EPOCHS):
-        print(epoch+1)
+        print(f"Epoch:{epoch+1}")
         train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler)
 
 
@@ -94,7 +94,7 @@ def main():
         # print("On Train loader:")
         # check_class_accuracy(model, train_loader, threshold=config.CONF_THRESHOLD)
 
-        if (epoch+1 % 5) == 0:
+        if (epoch+1) % 5 == 0:
             print("On Test loader:")
             check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
 
