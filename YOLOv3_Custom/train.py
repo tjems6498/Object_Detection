@@ -128,7 +128,7 @@ if __name__ == "__main__":
     # parser.add_argument('--num-classes', type=int, default=11, help='number of classes')
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
     # parser.add_argument('--weight-decay', type=float, default=1e-4, help='l2 normalization')
-    # parser.add_argument('--epochs', type=int, default=300, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=200, help='number of epochs')
     # parser.add_argument('--conf-threshold', type=float, default=0.6, help='')
     # parser.add_argument('--map-iou-threshold', type=float, default=0.5, help='')
     # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help='')
@@ -145,6 +145,7 @@ if __name__ == "__main__":
         config.CLASSES = data['names']
         config.BATCH_SIZE = opt.batch_size
         config.LEARNING_RATE = opt.lr
+        config.NUM_EPOCHS = opt.epochs
 
     main()
 
