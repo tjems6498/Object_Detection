@@ -365,9 +365,14 @@ def check_class_accuracy(model, loader, threshold):
 
 def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
+
+    for param_group in optimizer.param_groups:
+        learning_rate = param_group["lr"]  # 현재 optimizer의 learning rate를 저장
+
     checkpoint = {
         'state_dict': model.state_dict(),
         "optimizer": optimizer.state_dict(),
+        'learning_rate': learning_rate
     }
     torch.save(checkpoint, filename)
 
@@ -375,27 +380,17 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
 # 'layers.14.bn.num_batches_tracked' 341
 # 20 41.4
 # 35 34.1
-def load_checkpoint(checkpoint_file, model, optimizer, lr):
+def load_checkpoint(checkpoint_file, model, optimizer):
     print("=> Loading checkpoint")
-
-    # state_dict = model.state_dict()
-    # param_names = list(state_dict.keys())
-    #
     checkpoint = torch.load(checkpoint_file, map_location=config.DEVICE)
-    print(len(checkpoint.keys()))
-    # pretrained_state_dict = checkpoint['state_dict']
-    # pretrained_param_names = list(pretrained_state_dict.keys())
-    #
-    # for i, param in enumerate(param_names):
-    #     state_dict[param] = pretrained_state_dict[pretrained_param_names[i]]
+    model.load_state_dict(checkpoint["state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer"])
+    lr = checkpoint['learning_rate']
 
-    model.load_state_dict(checkpoint, strict=False)
-    # optimizer.load_state_dict(checkpoint['optimizer'])
-
-    # If we don't do this then it will just have learningrate of old checkpoint
-    # and it will lead to many hours of debugging
+    # If we don't do this then it will just have learning rate of old checkpoint
+    # and it will lead to many hours of debugging \:
     for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+        param_group["lr"] = lr
 
 
 def get_loaders():

@@ -26,7 +26,7 @@ torch.backends.cudnn.benchmark = True
 그러나, 입력 이미지 크기가 반복될 때마다 변경된다면 런타임성능이 오히려 저하될 수 있다.
 '''
 
-def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
+def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler):
     model.train()
     loop = tqdm(train_loader, leave=True)
     losses = []
@@ -55,6 +55,9 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         mean_loss = sum(losses) / len(losses)
         loop.set_postfix(loss=mean_loss)
 
+    scheduler.step(mean_loss)
+
+
 
 def main():
     model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
@@ -64,23 +67,26 @@ def main():
     )
     loss_fn = YOLOLoss()
     scaler = torch.cuda.amp.GradScaler()  # FP16
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, factor=0.1, patience=5, verbose=True
+    )
 
     train_loader, test_loader, train_eval_loader = get_loaders()  # test loader 추가해야함
 
     if config.LOAD_MODEL:
         load_checkpoint(
-            "darknet53_weights_pytorch.pth", model, optimizer, config.LEARNING_RATE
+            'checkpoint.pth.tar', model, optimizer
         )
 
     scaled_anchors = (
         torch.tensor(config.ANCHORS) * torch.tensor(config.S).unsqueeze(1).unsqueeze(1).repeat(1,3,2)
     ).to(config.DEVICE)
 
+    best_map = 0
     for epoch in range(config.NUM_EPOCHS):
-        train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors)
+        print(epoch+1)
+        train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler)
 
-        if config.SAVE_MODEL:
-            save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
 
         # print(f"Currently epoch {epoch}")
         # print("On Train Eval loader:")
@@ -88,7 +94,7 @@ def main():
         # print("On Train loader:")
         # check_class_accuracy(model, train_loader, threshold=config.CONF_THRESHOLD)
 
-        if epoch % 5 == 0 and epoch > 0:
+        if (epoch+1 % 5) == 0:
             print("On Test loader:")
             check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
 
@@ -108,6 +114,10 @@ def main():
             )
             print(f"MAP: {mapval.item()}")
 
+            if config.SAVE_MODEL:
+                if best_map < mapval.item():
+                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+                    best_map = mapval.item()
 
 if __name__ == "__main__":
 
@@ -122,8 +132,7 @@ if __name__ == "__main__":
     # parser.add_argument('--conf-threshold', type=float, default=0.6, help='')
     # parser.add_argument('--map-iou-threshold', type=float, default=0.5, help='')
     # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help='')
-    # parser.add_argument('--')
-    # parser.add_argument('--')
+
     opt = parser.parse_args()
 
     if opt.batch_size > 16:  # colab에서만

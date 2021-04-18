@@ -2,9 +2,15 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
+from model import YOLOv3
+import torch.optim as optim
+import config
 
-# img = cv2.imread('E:\\Computer Vision\\data\\project\\fruit_yolov3\\train\\images\\2323.jpg')
-# print(img.shape)
 
-img = np.array(Image.open('E:\\Computer Vision\\data\\project\\fruit_yolov3\\train\\images\\2323.jpg').convert('RGB'))
-print(img.shape)
+model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
+optimizer = optim.Adam(
+    model.parameters(), lr=0.0001, weight_decay=config.WEIGHT_DECAY
+)
+
+for param_group in optimizer.param_groups:
+    print(param_group)
