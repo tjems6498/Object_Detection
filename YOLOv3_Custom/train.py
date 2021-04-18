@@ -16,8 +16,10 @@ from util import (
     get_loaders,
 )
 from loss import YOLOLoss
+import pdb
 
 torch.backends.cudnn.benchmark = True
+
 '''
 내장된 cudnn 자동 튜너를 활성화하여, 하드웨어에 맞게 사용할 최상의 알고리즘(텐서 크기나 conv 연산에 맞게?)을 찾는다.
 입력 이미지 크기가 자주 변하지 않는다면, 초기 시간이 소요되지만 일반적으로 더 빠른 런타임의 효과를 볼 수 있다.
@@ -37,9 +39,9 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         )
 
         with torch.cuda.amp.autocast():
-            out = model(x)
+            out = model(x)  # [(2, 3, 13, 13, 16), (2, 3, 26, 26, 16), (2, 3, 52, 52, 16)]
             loss = (
-                loss_fn(out[0], y0, scaled_anchors[0])  # (N, 3, 13, 13, 9), (3,13,13,6)
+                loss_fn(out[0], y0, scaled_anchors[0])
                 + loss_fn(out[1], y1, scaled_anchors[1])
                 + loss_fn(out[2], y2, scaled_anchors[2])
             )
@@ -86,7 +88,7 @@ def main():
         # print("On Train loader:")
         # check_class_accuracy(model, train_loader, threshold=config.CONF_THRESHOLD)
 
-        if epoch % 10 == 0 and epoch > 0:
+        if epoch % 5 == 0 and epoch > 0:
             print("On Test loader:")
             check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
 
@@ -114,7 +116,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch-size', type=int, default=2, help='total batch size for all GPUs')
     # parser.add_argument('--img-size', type=int, default=416, help='[train, test] image sizes')
     # parser.add_argument('--num-classes', type=int, default=11, help='number of classes')
-    # parser.add_argument('--lr', type=float, default=3e-5, help='initial learning rate')
+    parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
     # parser.add_argument('--weight-decay', type=float, default=1e-4, help='l2 normalization')
     # parser.add_argument('--epochs', type=int, default=300, help='number of epochs')
     # parser.add_argument('--conf-threshold', type=float, default=0.6, help='')
@@ -133,6 +135,7 @@ if __name__ == "__main__":
         config.NUM_CLASSES = data['nc']
         config.CLASSES = data['names']
         config.BATCH_SIZE = opt.batch_size
+        config.LEARNING_RATE = opt.lr
 
     main()
 

@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 
 from util import intersection_over_union
-import pdb
+
 
 class YOLOLoss(nn.Module):
     def __init__(self):
@@ -62,7 +62,7 @@ class YOLOLoss(nn.Module):
         predictions[..., 1:3] = self.sigmoid(predictions[..., 1:3])  # x,y coordinates  Cx, Cy가 없는 이유는 위와 동일
         target[..., 3:5] = torch.log(  # tw = log(Bw/Pw)
             (1e-16 + target[..., 3:5] / anchors)  # 분자가 0이 됨을 막기 위함
-        )  # width, height coordinates  # target을 bw,bh에서 tw, wh상태로 만들어줌
+        )  # width, height coordinates  # target을 bw,bh에서 tw, th상태로 만들어줌
         box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])
 
 

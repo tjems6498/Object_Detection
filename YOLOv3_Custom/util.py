@@ -293,13 +293,14 @@ def get_evaluation_bboxes(
         for i in range(3):
             S = predictions[i].shape[2]
             anchor = torch.tensor([*anchors[i]]).to(device) * S  # 앞에*을 붙여서 리스트를 벗고 들어감 -> tenor변환 하면서 차원하나 축소효과
+            # pdb.set_trace()
             boxes_scale_i = cells_to_bboxes(
                 predictions[i], anchor, S=S, is_preds=True
             )  # 해당 스케일의 예측값을 t에서 b로 변환하고 (batch, SxSx3, 6)으로 차원변경
             for idx, (box) in enumerate(boxes_scale_i):  # 배치만큼
                 bboxes[idx] += box  # ex) 0번째 리스트에 0번째 이미지에 대한 예측 정보를 담음
 
-        # 정답에 대한 변환값은 아무 스케일 1개에서 가져오면 됨
+        # 정답에 대한 변환값은 아무 스케일 1개에서 가져오면 됨 (cells_to_bboxes 함수에서 box 좌표를 0~1사이 값으로 scailing하기 떄문)
         true_bboxes = cells_to_bboxes(labels[2], anchor, S=S, is_preds=False)  # 52 x 52 스케일
 
         for idx in range(batch_size):  # 각 배치리스트 값마다 NMS를 수행
