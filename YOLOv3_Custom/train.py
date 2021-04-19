@@ -129,13 +129,13 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
     # parser.add_argument('--weight-decay', type=float, default=1e-4, help='l2 normalization')
     parser.add_argument('--epochs', type=int, default=200, help='number of epochs')
-    parser.add_argument('--load-pretrained', type=bool, default=True)
+    parser.add_argument('--load_pretrained', type=str, default='', help='pretrained weights file name')
     # parser.add_argument('--conf-threshold', type=float, default=0.6, help='')
     # parser.add_argument('--map-iou-threshold', type=float, default=0.5, help='')
-    # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help='')
+    # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help=''
 
     opt = parser.parse_args()
-
+    pdb.set_trace()
     if opt.batch_size > 16:  # colab에서만
         with open('data.yaml') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)

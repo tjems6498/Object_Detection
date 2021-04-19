@@ -3,7 +3,7 @@ import torch
 import argparse
 import config
 from model import YOLOv3
-from util import cells_to_bboxes, non_max_suppression
+from util import cells_to_bboxes, non_max_suppression, show_image
 import pdb
 
 
@@ -50,8 +50,9 @@ if __name__ == '__main__':
         print(boxes)
         # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
 
+        image = show_image(img, boxes)
 
-
+        cv2.imshow('fruit_detect', image)
 
 
         pdb.set_trace()

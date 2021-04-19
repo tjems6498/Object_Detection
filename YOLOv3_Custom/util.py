@@ -281,7 +281,9 @@ def show_image(image, boxes):
         right_bottom = box[4:]
 
         cv2.rectangle(image, (left_top), (right_bottom), colors[int(class_pred)], 2, cv2.LINE_AA)
-        cv2.putText(image, class_labels[int(class_pred)], (c1[0], c1[1] - 2), 0, tl / 3, colors[int(class_pred)], thickness=1, lineType=cv2.LINE_AA)
+        cv2.putText(image, class_labels[int(class_pred)], (left_top+5), color=colors[int(class_pred)], thickness=1, lineType=cv2.LINE_AA)
+
+    return image
 
 
 def get_evaluation_bboxes(
