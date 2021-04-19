@@ -6,7 +6,7 @@ class Conv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
         super(Conv, self).__init__()
         self.layers = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding),
+            nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.LeakyReLU(),
         )
@@ -14,19 +14,28 @@ class Conv(nn.Module):
     def forward(self, x):
         return self.layers(x)
 
+# def Conv(in_num, out_num, kernel_size=3, stride=1, padding=1):
+#     return nn.Sequential(
+#         nn.Conv2d(in_num, out_num, kernel_size=kernel_size, stride=stride, padding=padding, bias=False),
+#         nn.BatchNorm2d(out_num),
+#         nn.LeakyReLU(),
+#     )
 
 class DarkResidualBlock(nn.Module):
     def __init__(self, in_channels):
         super(DarkResidualBlock, self).__init__()
-        reduced_dim = in_channels // 2
-        self.layers1 = Conv(in_channels, reduced_dim, 1, 1, 0)
-        self.layers2 = Conv(reduced_dim, in_channels, 3, 1, 1)
+
+        reduced_channels = in_channels // 2
+
+        self.layer1 = Conv(in_channels, reduced_channels, 1, 1, 0)
+        self.layer2 = Conv(reduced_channels, in_channels, 3, 1, 1)
 
     def forward(self, x):
         residual = x
-        out = self.layers1(x)
-        out = self.layers2(out)
-        out += residual  # leaky relu 이후에 skip connection이 되었는데 문제가 되지 않은것 같다.
+
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out += residual
         return out
 
 class Darknet53(nn.Module):
@@ -73,13 +82,16 @@ class Darknet53(nn.Module):
         return out
 
 
-def darknet53(num_classes):
+def darknet53_model(num_classes):
     return Darknet53(DarkResidualBlock, num_classes)
 
 
 if __name__ == '__main__':
-    model = darknet53(1000)
+    import torchsummary as summary
+    model = darknet53_model(1000)
     inputs = torch.rand((4, 3, 256, 256))
     outputs = model(inputs)
     assert outputs.shape == (4, 1000)
     print("Success!!")
+    print(model)
+    # summary.summary(model, input_size=(3, 256, 256), device='cpu')

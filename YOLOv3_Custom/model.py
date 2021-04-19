@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
 import pdb
+import numpy as np
 import torchsummary as summary
+from backbone import *
 
 '''
 Information about architecture config:
@@ -103,6 +105,7 @@ class YOLOv3(nn.Module):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.layers = self._create_conv_layers()
+        self.load_pretrained_layers()
 
     def _create_conv_layers(self):
         layers = nn.ModuleList()
@@ -163,6 +166,18 @@ class YOLOv3(nn.Module):
 
         return outputs  # [(n, 3, 13, 13, 9), (n, 3, 26, 26, 9), (n, 3, 52, 52, 9)]
 
+    def load_pretrained_layers(self):
+        state_dict = self.state_dict()
+        param_names = list(state_dict.keys())
+
+        check_point = torch.load('darknet53_pretrained.pth.tar', map_location=config.DEVICE)
+        pretrained_state_dict = check_point['state_dict']
+        pretrained_param_names = list(check_point['state_dict'].keys())
+
+        for i, param in enumerate(param_names[:312]):  # fc layer 전까지 weight 적용
+            state_dict[param] = pretrained_state_dict[pretrained_param_names[i]]
+        self.load_state_dict(state_dict)
+
 
 if __name__ == '__main__':
     num_classes = 4
@@ -173,7 +188,7 @@ if __name__ == '__main__':
     assert model(x)[0].shape == (2, 3, IMAGE_SIZE // 32, IMAGE_SIZE // 32, num_classes + 5)
     assert model(x)[1].shape == (2, 3, IMAGE_SIZE // 16, IMAGE_SIZE // 16, num_classes + 5)
     assert model(x)[2].shape == (2, 3, IMAGE_SIZE // 8, IMAGE_SIZE // 8, num_classes + 5)
-    summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
-    # print(model)
+    # summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
+    print(model)
     print("Success!")
 
