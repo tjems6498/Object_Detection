@@ -30,9 +30,6 @@ from backbone.darknet53 import darknet53_model
 # # print(model2.state_dict()['conv1.layers.0.weight'])
 #
 #
-
-a = '4'
-if a:
-    print('ds')
-else:
-    print('ssss')
+exist_epoch = 50
+for epoch in range(exist_epoch, config.NUM_EPOCHS+exist_epoch) if exist_epoch else range(config.NUM_EPOCHS):
+    print(epoch)

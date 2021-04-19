@@ -272,15 +272,15 @@ def show_image(image, boxes):
     cmap = plt.get_cmap('tab20b')
     class_labels = config.CLASSES
     colors = [cmap(i) for i in np.linspace(0, 1, len(class_labels))]
-    image = np.array(image.squeeze(0).permute(1,2,0))
+    image = np.array(image.cpu().squeeze(0).permute(1,2,0))
 
     for box in boxes:
         class_pred = box[0]
         prob_score = box[1]
         left_top = box[2:4]
         right_bottom = box[4:]
-
-        cv2.rectangle(image, (left_top), (right_bottom), colors[int(class_pred)], 2, cv2.LINE_AA)
+        pdb.set_trace()
+        cv2.rectangle(image, (left_top), (right_bottom), colors[int(class_pred)], thickness=int(1), lineType=cv2.LINE_AA)
         cv2.putText(image, class_labels[int(class_pred)], (left_top+5), color=colors[int(class_pred)], thickness=1, lineType=cv2.LINE_AA)
 
     return image
