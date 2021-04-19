@@ -71,7 +71,7 @@ def main():
         optimizer, factor=0.1, patience=5, verbose=True
     )
 
-    train_loader, test_loader, train_eval_loader = get_loaders()  # test loader 추가해야함
+    train_loader, test_loader = get_loaders()  # test loader 추가해야함
 
     if config.LOAD_MODEL:
         load_checkpoint(
@@ -96,7 +96,7 @@ def main():
 
         if (epoch+1) % 5 == 0:
             print("On Test loader:")
-            check_class_accuracy(model, test_loader, threshold=config.CONF_THRESHOLD)
+            check_class_accuracy(model, loss_fn, test_loader, scaled_anchors, threshold=config.CONF_THRESHOLD)
 
             pred_boxes, true_boxes = get_evaluation_bboxes(
                 test_loader,

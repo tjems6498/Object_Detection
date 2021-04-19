@@ -268,27 +268,21 @@ def plot_image(image, boxes):
 
     plt.show()
 
-def show_image(image, boxes):
-    cmap = plt.get_cmap('tab20b')
+def show_image(image, boxes, colors):
     class_labels = config.CLASSES
-    colors = [cmap(i) for i in np.linspace(0, 1, len(class_labels))]
-    # image = np.array(image.cpu().squeeze(0).permute(1,2,0))
-
+    # print(colors)
     for box in boxes:
         box[2:] = list(map(lambda x: int(x *416), box[2:]))
 
-        class_pred = box[0]
+        class_pred = int(box[0])
         prob_score = box[1]
         x1 = box[2] - (box[4] // 2)
         y1 = box[3] - (box[5] // 2)
         x2 = box[2] + (box[4] // 2)
         y2 = box[3] + (box[5] // 2)
-        right_bottom = box[4:]
-        print(box[2:])
-        cv2.rectangle(image, (x1,y1),(x2,y2), color=(255, 0, 0), thickness=1, lineType=cv2.LINE_AA)
-        cv2.putText(image, class_labels[int(class_pred)], (x1,y1), color=(255, 0, 0), thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, lineType=cv2.LINE_AA)
-        # cv2.circle(image, tuple(left_top), 5, (0, 0, 255), -1)
-        # cv2.circle(image, tuple(right_bottom), 5, (0, 0, 255), -1)
+        cv2.rectangle(image, (x1,y1),(x2,y2), color=colors[class_pred], thickness=1, lineType=cv2.LINE_AA)
+        cv2.putText(image, class_labels[class_pred], (x1,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, lineType=cv2.LINE_AA)
+
     return image
 
 
@@ -348,22 +342,41 @@ def get_evaluation_bboxes(
 
 
 
-def check_class_accuracy(model, loader, threshold):
+def check_class_accuracy(model, loss_fn, loader, scaled_anchors, threshold):
     model.eval()
     tot_class_preds, correct_class = 0, 0
     tot_noobj, correct_noobj = 0, 0
     tot_obj, correct_obj = 0, 0
 
-    for idx, (x, y) in enumerate(tqdm(loader)):
+    loop = tqdm(loader, leave=True)
+    losses = []
+    for idx, (x, y) in enumerate(loop):
         if idx == 100:
             break
         x = x.to(config.DEVICE)
+        y0, y1, y2 = (
+            y[0].to(config.DEVICE),
+            y[1].to(config.DEVICE),
+            y[2].to(config.DEVICE)
+        )
+
         with torch.no_grad():
             out = model(x)
+            loss = (
+                loss_fn(out[0], y0, scaled_anchors[0])
+                + loss_fn(out[1], y1, scaled_anchors[1])
+                + loss_fn(out[2], y2, scaled_anchors[2])
+            )
+
+        losses.append(loss.item())
+
+        mean_loss = sum(losses) / len(losses)
+        loop.set_postfix(loss=mean_loss)
+
 
         for i in range(3):
             y[i] = y[i].to(config.DEVICE)
-            obj = y[i][..., 0] == 1 # in paper this is Iobj_i
+            obj = y[i][..., 0] == 1  # in paper this is Iobj_i
             noobj = y[i][..., 0] == 0  # in paper this is Iobj_i
 
             correct_class += torch.sum(
@@ -400,9 +413,6 @@ def save_checkpoint(model, optimizer, filename="my_checkpoint.pth.tar"):
     torch.save(checkpoint, filename)
 
 
-# 'layers.14.bn.num_batches_tracked' 341
-# 20 41.4
-# 35 34.1
 def load_checkpoint(checkpoint_file, model, optimizer):
     print("=> Loading checkpoint")
     checkpoint = torch.load(checkpoint_file, map_location=config.DEVICE)
@@ -432,10 +442,10 @@ def get_loaders():
     train_loader = DataLoader(
         dataset=train_dataset,
         batch_size=config.BATCH_SIZE,
-        num_workers=config.NUM_WORKERS,
-        pin_memory=config.PIN_MEMORY,
+        num_workers=config.NUM_WORKERS,  # cpu를 이용한 데이터 로드 멀티 프로세싱 / 값이 클수록 gpu로 데이터를 빨리 던져줄 주 있지만 너무 크다면 데이터 로딩 외의 작업이 영향을 받을 수 있기때문에 적당한 값 필요
+        pin_memory=False,
         shuffle=True,
-        drop_last=False,
+        drop_last=False,  # 배치로 나누고 마지막에 남는 데이터도 다 사용
     )
 
     test_dataset = YOLODataset(
@@ -453,22 +463,7 @@ def get_loaders():
         drop_last=False,
     )
 
-    train_eval_dataset = YOLODataset(
-        root=config.TRAIN_DIR,
-        anchors=config.ANCHORS,
-        S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
-        transform=config.test_transforms
-    )
-    train_eval_loader = DataLoader(
-        dataset=train_eval_dataset,
-        batch_size=config.BATCH_SIZE,
-        num_workers=config.NUM_WORKERS,
-        pin_memory=config.PIN_MEMORY,
-        shuffle=False,
-        drop_last=False,
-    )
-
-    return train_loader, test_loader, train_eval_loader
+    return train_loader, test_loader
 
 
 def seed_everything(seed=42):
