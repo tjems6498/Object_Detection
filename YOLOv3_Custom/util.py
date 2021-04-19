@@ -194,7 +194,7 @@ def mean_average_precision(
     return sum(average_precisions) / len(average_precisions)
 
 
-
+#
 def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
 
     # 코드 줄여보기
@@ -272,17 +272,23 @@ def show_image(image, boxes):
     cmap = plt.get_cmap('tab20b')
     class_labels = config.CLASSES
     colors = [cmap(i) for i in np.linspace(0, 1, len(class_labels))]
-    image = np.array(image.cpu().squeeze(0).permute(1,2,0))
+    # image = np.array(image.cpu().squeeze(0).permute(1,2,0))
 
     for box in boxes:
+        box[2:] = list(map(lambda x: int(x *416), box[2:]))
+
         class_pred = box[0]
         prob_score = box[1]
-        left_top = box[2:4]
+        x1 = box[2] - (box[4] // 2)
+        y1 = box[3] - (box[5] // 2)
+        x2 = box[2] + (box[4] // 2)
+        y2 = box[3] + (box[5] // 2)
         right_bottom = box[4:]
-        pdb.set_trace()
-        cv2.rectangle(image, (left_top), (right_bottom), colors[int(class_pred)], thickness=int(1), lineType=cv2.LINE_AA)
-        cv2.putText(image, class_labels[int(class_pred)], (left_top+5), color=colors[int(class_pred)], thickness=1, lineType=cv2.LINE_AA)
-
+        print(box[2:])
+        cv2.rectangle(image, (x1,y1),(x2,y2), color=(255, 0, 0), thickness=1, lineType=cv2.LINE_AA)
+        cv2.putText(image, class_labels[int(class_pred)], (x1,y1), color=(255, 0, 0), thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, lineType=cv2.LINE_AA)
+        # cv2.circle(image, tuple(left_top), 5, (0, 0, 255), -1)
+        # cv2.circle(image, tuple(right_bottom), 5, (0, 0, 255), -1)
     return image
 
 

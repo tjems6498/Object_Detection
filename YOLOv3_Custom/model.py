@@ -168,7 +168,7 @@ class YOLOv3(nn.Module):
                 route_connections.pop()
 
         return outputs  # [(n, 3, 13, 13, 9), (n, 3, 26, 26, 9), (n, 3, 52, 52, 9)]
-
+#
     def load_pretrained_layers(self, pretrained_weight):
         state_dict = self.state_dict()
         param_names = list(state_dict.keys())
