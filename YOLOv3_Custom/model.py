@@ -101,14 +101,14 @@ class ScalePrediction(nn.Module):
 
 
 class YOLOv3(nn.Module):
-    def __init__(self, in_channels=3, num_classes=4, load_pretrained=''):
+    def __init__(self, in_channels=3, num_classes=4, pretrained_weight=''):
         super().__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.layers = self._create_conv_layers()
-        if load_pretrained:
+        if pretrained_weight:
             print('Loading Pretrained model!')
-            self.load_pretrained_layers()
+            self.load_pretrained_layers(pretrained_weight)
 
     def _create_conv_layers(self):
         layers = nn.ModuleList()
@@ -169,11 +169,11 @@ class YOLOv3(nn.Module):
 
         return outputs  # [(n, 3, 13, 13, 9), (n, 3, 26, 26, 9), (n, 3, 52, 52, 9)]
 
-    def load_pretrained_layers(self):
+    def load_pretrained_layers(self, pretrained_weight):
         state_dict = self.state_dict()
         param_names = list(state_dict.keys())
 
-        check_point = torch.load('darknet53_pretrained.pth.tar', map_location=cf.DEVICE)
+        check_point = torch.load(pretrained_weight, map_location=cf.DEVICE)
         pretrained_state_dict = check_point['state_dict']
         pretrained_param_names = list(check_point['state_dict'].keys())
 
