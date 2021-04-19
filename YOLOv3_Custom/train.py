@@ -60,7 +60,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
 
 
 def main():
-    model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
+    model = YOLOv3(num_classes=config.NUM_CLASSES, load_pretrained=opt.load_pretrained).to(config.DEVICE)
 
     optimizer = optim.Adam(
         model.parameters(), lr=config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY
@@ -129,6 +129,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
     # parser.add_argument('--weight-decay', type=float, default=1e-4, help='l2 normalization')
     parser.add_argument('--epochs', type=int, default=200, help='number of epochs')
+    parser.add_argument('--load-pretrained', type=bool, default=True)
     # parser.add_argument('--conf-threshold', type=float, default=0.6, help='')
     # parser.add_argument('--map-iou-threshold', type=float, default=0.5, help='')
     # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help='')

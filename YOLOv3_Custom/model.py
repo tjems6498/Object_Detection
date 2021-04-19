@@ -101,12 +101,13 @@ class ScalePrediction(nn.Module):
 
 
 class YOLOv3(nn.Module):
-    def __init__(self, in_channels=3, num_classes=4):
+    def __init__(self, in_channels=3, num_classes=4, load_pretrained=False):
         super().__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.layers = self._create_conv_layers()
-        self.load_pretrained_layers()
+        if load_pretrained:
+            self.load_pretrained_layers()
 
     def _create_conv_layers(self):
         layers = nn.ModuleList()
