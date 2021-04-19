@@ -4,6 +4,7 @@ import pdb
 import numpy as np
 import torchsummary as summary
 from backbone import *
+import config as cf
 
 '''
 Information about architecture config:
@@ -170,7 +171,7 @@ class YOLOv3(nn.Module):
         state_dict = self.state_dict()
         param_names = list(state_dict.keys())
 
-        check_point = torch.load('darknet53_pretrained.pth.tar', map_location=config.DEVICE)
+        check_point = torch.load('darknet53_pretrained.pth.tar', map_location=cf.DEVICE)
         pretrained_state_dict = check_point['state_dict']
         pretrained_param_names = list(check_point['state_dict'].keys())
 
