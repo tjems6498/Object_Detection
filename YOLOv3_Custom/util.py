@@ -443,7 +443,7 @@ def get_loaders():
         dataset=train_dataset,
         batch_size=config.BATCH_SIZE,
         num_workers=config.NUM_WORKERS,  # cpu를 이용한 데이터 로드 멀티 프로세싱 / 값이 클수록 gpu로 데이터를 빨리 던져줄 주 있지만 너무 크다면 데이터 로딩 외의 작업이 영향을 받을 수 있기때문에 적당한 값 필요
-        pin_memory=False,
+        pin_memory=config.PIN_MEMORY,
         shuffle=True,
         drop_last=False,  # 배치로 나누고 마지막에 남는 데이터도 다 사용
     )
