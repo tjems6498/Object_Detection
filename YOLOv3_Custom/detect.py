@@ -48,6 +48,8 @@ if __name__ == '__main__':
 
         boxes = non_max_suppression(boxes, iou_threshold=1, threshold=0.7, box_format='midpoint')
         print(boxes)
+        # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
+
 
 
 

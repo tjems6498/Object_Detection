@@ -107,6 +107,7 @@ class YOLOv3(nn.Module):
         self.in_channels = in_channels
         self.layers = self._create_conv_layers()
         if load_pretrained:
+            print('Loading Pretrained model!')
             self.load_pretrained_layers()
 
     def _create_conv_layers(self):

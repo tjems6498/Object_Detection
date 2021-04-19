@@ -92,7 +92,7 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format='corners'):
                     torch.tensor(box[2:]),
                     torch.tensor(chosen_box[2:]),
 
-                    box_format=box_format) < iou_threshold]
+                    box_format=box_format) < iou_threshold]  # chosen_box와 다른 클래스이거나 iou가 threshold값 보다 낮으면 생존
 
         bboxes_after_nms.append(chosen_box)
     return bboxes_after_nms
@@ -267,6 +267,21 @@ def plot_image(image, boxes):
         )
 
     plt.show()
+
+def show_image(image, boxes):
+    cmap = plt.get_cmap('tab20b')
+    class_labels = config.CLASSES
+    colors = [cmap(i) for i in np.linspace(0, 1, len(class_labels))]
+    image = np.array(image.squeeze(0).permute(1,2,0))
+
+    for box in boxes:
+        class_pred = box[0]
+        prob_score = box[1]
+        left_top = box[2:4]
+        right_bottom = box[4:]
+
+        cv2.rectangle(image, (left_top), (right_bottom), colors[int(class_pred)], 2, cv2.LINE_AA)
+        cv2.putText(image, class_labels[int(class_pred)], (c1[0], c1[1] - 2), 0, tl / 3, colors[int(class_pred)], thickness=1, lineType=cv2.LINE_AA)
 
 
 def get_evaluation_bboxes(
