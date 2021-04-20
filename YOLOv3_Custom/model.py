@@ -191,7 +191,7 @@ if __name__ == '__main__':
     assert model(x)[0].shape == (2, 3, IMAGE_SIZE // 32, IMAGE_SIZE // 32, num_classes + 5)
     assert model(x)[1].shape == (2, 3, IMAGE_SIZE // 16, IMAGE_SIZE // 16, num_classes + 5)
     assert model(x)[2].shape == (2, 3, IMAGE_SIZE // 8, IMAGE_SIZE // 8, num_classes + 5)
-    # summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
-    print(model)
+    summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
+    # print(model)
     print("Success!")
 

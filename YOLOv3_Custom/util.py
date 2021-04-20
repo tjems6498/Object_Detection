@@ -141,13 +141,6 @@ def my_non_max_suppression(bboxes, iou_threshold, threshold, score_threshold=0.0
 
 
 
-
-
-
-
-
-
-
 def mean_average_precision(
         pred_boxes, true_boxes, iou_threshold=0.5, box_format='midpoint', num_classes=4
 ):

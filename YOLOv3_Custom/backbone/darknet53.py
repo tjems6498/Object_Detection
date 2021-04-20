@@ -89,9 +89,9 @@ def darknet53_model(num_classes):
 if __name__ == '__main__':
     import torchsummary as summary
     model = darknet53_model(1000)
-    inputs = torch.rand((4, 3, 256, 256))
+    inputs = torch.rand((4, 3, 416, 416))
     outputs = model(inputs)
     assert outputs.shape == (4, 1000)
     print("Success!!")
-    print(model)
-    # summary.summary(model, input_size=(3, 256, 256), device='cpu')
+    # print(model)
+    summary.summary(model, input_size=(3, 416, 416), device='cpu')
