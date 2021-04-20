@@ -14,17 +14,12 @@ from util import (
     load_checkpoint,
     check_class_accuracy,
     get_loaders,
+    seed_everything
 )
 from loss import YOLOLoss
 import pdb
 
-torch.backends.cudnn.benchmark = True
 
-'''
-내장된 cudnn 자동 튜너를 활성화하여, 하드웨어에 맞게 사용할 최상의 알고리즘(텐서 크기나 conv 연산에 맞게?)을 찾는다.
-입력 이미지 크기가 자주 변하지 않는다면, 초기 시간이 소요되지만 일반적으로 더 빠른 런타임의 효과를 볼 수 있다.
-그러나, 입력 이미지 크기가 반복될 때마다 변경된다면 런타임성능이 오히려 저하될 수 있다.
-'''
 
 def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler):
     model.train()
@@ -133,7 +128,6 @@ if __name__ == "__main__":
     # parser.add_argument('--conf-threshold', type=float, default=0.6, help='')
     # parser.add_argument('--map-iou-threshold', type=float, default=0.5, help='')
     # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help=''
-
     opt = parser.parse_args()
 
     if opt.batch_size > 16:  # colab에서만
@@ -147,6 +141,15 @@ if __name__ == "__main__":
         config.BATCH_SIZE = opt.batch_size
         config.LEARNING_RATE = opt.lr
         config.NUM_EPOCHS = opt.epochs
+
+
+    seed_everything()
+    torch.backends.cudnn.benchmark = True
+    '''
+    내장된 cudnn 자동 튜너를 활성화하여, 하드웨어에 맞게 사용할 최상의 알고리즘(텐서 크기나 conv 연산에 맞게?)을 찾는다.
+    입력 이미지 크기가 자주 변하지 않는다면, 초기 시간이 소요되지만 일반적으로 더 빠른 런타임의 효과를 볼 수 있다.
+    그러나, 입력 이미지 크기가 반복될 때마다 변경된다면 런타임성능이 오히려 저하될 수 있다.
+    '''
 
     main()
 

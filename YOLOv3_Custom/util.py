@@ -68,7 +68,7 @@ def cells_to_bboxes(predictions, anchors, S, is_preds=True):
 
 
 
-def non_max_suppression(bboxes, iou_threshold, threshold, box_format='corners'):
+def non_max_suppression(bboxes, iou_threshold, threshold, box_format='midpoint'):
     '''
 
     :param bboxes: list of lists containing all bboxes with each bboxes
@@ -96,6 +96,56 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format='corners'):
 
         bboxes_after_nms.append(chosen_box)
     return bboxes_after_nms
+
+
+def my_non_max_suppression(bboxes, iou_threshold, threshold, score_threshold=0.001, sigma=0.5, box_format='corners', method='linear'):
+    # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
+    if method not in ('linear', 'gaussian', 'greedy'):
+        raise ValueError('method must be linear, gaussian or greedy')
+    assert type(bboxes) == list
+
+    bboxes = [box for box in bboxes if box[1] > threshold]
+    bboxes = np.array(bboxes)
+    bboxes_after_nms = []
+
+    while bboxes.size > 0:
+        max_idx = np.argmax(bboxes[:, 1], axis=0)
+        bboxes[[0, max_idx], :] = bboxes[[max_idx, 0], :]  # 첫번째 row와 score가 가장 큰 row의 위치 전환
+        bboxes_after_nms.append(bboxes[0, :].tolist())
+
+        iou = intersection_over_union(torch.from_numpy(bboxes[0, :]),
+                                      torch.from_numpy(bboxes[1:, :]),
+                                      box_format=box_format)
+        iou = np.array(iou.squeeze())
+
+        if method == 'linear':
+            weight = np.ones_like(iou)
+            weight[iou > iou_threshold] -= iou[iou > iou_threshold]
+        elif method == 'gaussian':
+            weight = np.exp(-(iou * iou) / sigma)
+        else:  # traditional nms
+            weight = np.ones_like(iou)
+            weight[iou > iou_threshold] = 0
+
+
+        bboxes[1:, 1] *= weight
+        bboxes = np.array([box.tolist() for box in bboxes[1:, :] if (bboxes[0, 0] != box[0]) or (box[1] >= score_threshold)])
+
+        # retained_idx = np.where(box for box in bboxes if box[0,0] != bboxes[0, 0] or bboxes[1:, 1] >= score_threshold )[0]  # 다 살아남으면 0,1,2,3,4~~~
+        # bboxes = bboxes[retained_idx+1, :]  # 현재 iter에서의 top score(index 0)를 제외한 살아남은 박스만 다음 반복에 포함
+
+    return bboxes_after_nms
+
+
+
+
+
+
+
+
+
+
+
 
 
 def mean_average_precision(
@@ -275,13 +325,16 @@ def show_image(image, boxes, colors):
         box[2:] = list(map(lambda x: int(x *416), box[2:]))
 
         class_pred = int(box[0])
-        prob_score = box[1]
+        prob_score = str(round(box[1], 2))
         x1 = box[2] - (box[4] // 2)
         y1 = box[3] - (box[5] // 2)
         x2 = box[2] + (box[4] // 2)
         y2 = box[3] + (box[5] // 2)
         cv2.rectangle(image, (x1,y1),(x2,y2), color=colors[class_pred], thickness=1, lineType=cv2.LINE_AA)
-        cv2.putText(image, class_labels[class_pred], (x1,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN,fontScale=1, lineType=cv2.LINE_AA)
+        cv2.putText(image, class_labels[class_pred], (x1,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, lineType=cv2.LINE_AA)
+        # cv2.putText(image, prob_score, (x1+60,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, lineType=cv2.LINE_AA)
+
+    image = cv2.resize(image, (640, 480))
 
     return image
 
@@ -371,7 +424,7 @@ def check_class_accuracy(model, loss_fn, loader, scaled_anchors, threshold):
         losses.append(loss.item())
 
         mean_loss = sum(losses) / len(losses)
-        loop.set_postfix(loss=mean_loss)
+        loop.set_postfix(validation_loss=mean_loss)
 
 
         for i in range(3):
