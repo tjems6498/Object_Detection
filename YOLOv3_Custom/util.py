@@ -91,7 +91,6 @@ def non_max_suppression(bboxes, iou_threshold, threshold, box_format='midpoint')
         bboxes = [box for box in bboxes if box[0] != chosen_box[0] or intersection_over_union(
                     torch.tensor(box[2:]),
                     torch.tensor(chosen_box[2:]),
-
                     box_format=box_format) < iou_threshold]  # chosen_box와 다른 클래스이거나 iou가 threshold값 보다 낮으면 생존
 
         bboxes_after_nms.append(chosen_box)
@@ -113,11 +112,10 @@ def my_non_max_suppression(bboxes, iou_threshold, threshold, score_threshold=0.0
         bboxes[[0, max_idx], :] = bboxes[[max_idx, 0], :]  # 첫번째 row와 score가 가장 큰 row의 위치 전환
         bboxes_after_nms.append(bboxes[0, :].tolist())
 
-        iou = intersection_over_union(torch.from_numpy(bboxes[0, :]),
-                                      torch.from_numpy(bboxes[1:, :]),
+        iou = intersection_over_union(torch.from_numpy(bboxes[0, 2:]),
+                                      torch.from_numpy(bboxes[1:, 2:]),
                                       box_format=box_format)
         iou = np.array(iou.squeeze())
-
         if method == 'linear':
             weight = np.ones_like(iou)
             weight[iou > iou_threshold] -= iou[iou > iou_threshold]
@@ -367,12 +365,14 @@ def get_evaluation_bboxes(
         true_bboxes = cells_to_bboxes(labels[2], anchor, S=S, is_preds=False)  # 52 x 52 스케일
 
         for idx in range(batch_size):  # 각 배치리스트 값마다 NMS를 수행
-            nms_boxes = non_max_suppression(
-                bboxes[idx],
-                iou_threshold=iou_threshold,
-                threshold=threshold,
-                box_format=box_format,
-            )  # return list
+            # nms_boxes = non_max_suppression(
+            #     bboxes[idx],
+            #     iou_threshold=iou_threshold,
+            #     threshold=threshold,
+            #     box_format=box_format,
+            # )  # return list
+            nms_boxes = my_non_max_suppression(bboxes[idx], iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD,
+                                           score_threshold=0.001, box_format='midpoint', method='greedy')
 
             for nms_box in nms_boxes:
                 all_pred_boxes.append([train_idx] + nms_box)  # 각 nms_box list에 0번째에 batch index 추가해서 append
