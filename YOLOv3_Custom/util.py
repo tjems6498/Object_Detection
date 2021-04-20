@@ -112,10 +112,10 @@ def my_non_max_suppression(bboxes, iou_threshold, threshold, score_threshold=0.0
         bboxes[[0, max_idx], :] = bboxes[[max_idx, 0], :]  # 첫번째 row와 score가 가장 큰 row의 위치 전환
         bboxes_after_nms.append(bboxes[0, :].tolist())
 
-        iou = intersection_over_union(torch.from_numpy(bboxes[0, 2:]),
-                                      torch.from_numpy(bboxes[1:, 2:]),
+        iou = intersection_over_union(torch.from_numpy(bboxes[1:, 2:]),
+                                      torch.from_numpy(bboxes[0, 2:]),
                                       box_format=box_format)
-        iou = np.array(iou.squeeze())
+        iou = np.array(iou.squeeze())  # tensor(n ,1)  -> numpy(n)
         if method == 'linear':
             weight = np.ones_like(iou)
             weight[iou > iou_threshold] -= iou[iou > iou_threshold]
@@ -126,7 +126,7 @@ def my_non_max_suppression(bboxes, iou_threshold, threshold, score_threshold=0.0
             weight[iou > iou_threshold] = 0
 
 
-        bboxes[1:, 1] *= weight
+        bboxes[1:, 1] *= weight  # numpy * numpy (ok)
         bboxes = np.array([box.tolist() for box in bboxes[1:, :] if (bboxes[0, 0] != box[0]) or (box[1] >= score_threshold)])
 
         # retained_idx = np.where(box for box in bboxes if box[0,0] != bboxes[0, 0] or bboxes[1:, 1] >= score_threshold )[0]  # 다 살아남으면 0,1,2,3,4~~~
@@ -371,8 +371,8 @@ def get_evaluation_bboxes(
             #     threshold=threshold,
             #     box_format=box_format,
             # )  # return list
-            nms_boxes = my_non_max_suppression(bboxes[idx], iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD,
-                                           score_threshold=0.001, box_format='midpoint', method='greedy')
+            nms_boxes = my_non_max_suppression(bboxes[idx], iou_threshold=0.3, threshold=config.CONF_THRESHOLD,
+                                           score_threshold=0.3, box_format='midpoint', method='linear')
 
             for nms_box in nms_boxes:
                 all_pred_boxes.append([train_idx] + nms_box)  # 각 nms_box list에 0번째에 batch index 추가해서 append
