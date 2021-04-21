@@ -41,7 +41,7 @@ def mosaic(root, idxs, output_size, scale_range, filter_scale=1 / 50):
             img = cv2.imread(os.path.join(root, "images", idx + ".jpg"))
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         except:
-            image = np.array(Image.open(os.path.join(root, "images", idx+".jpg")).convert('RGB'))
+            img = np.array(Image.open(os.path.join(root, "images", idx+".jpg")).convert('RGB'))
 
         bboxes = np.roll(np.loadtxt(fname=os.path.join(root, "labels", idx+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
         bboxes[:,:4] = bboxes[:,:4] - 1e-5
