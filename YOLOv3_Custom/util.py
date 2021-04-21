@@ -235,6 +235,24 @@ def mean_average_precision(
     return sum(average_precisions) / len(average_precisions)
 
 
+def xywh_to_xyxy(bboxes):
+    bboxes = torch.tensor(bboxes)
+    bboxes_xyxy = torch.tensor(bboxes)
+
+    bboxes_xyxy[:, 0:2] = bboxes[:, 0:2] - bboxes[:, 2:4] / 2
+    bboxes_xyxy[:, 2:4] = bboxes[:, 0:2] + bboxes[:, 2:4] / 2
+    bboxes_xyxy[:, :-1] = torch.clamp(bboxes_xyxy[:, :-1], 0, 1)
+
+    return bboxes_xyxy.tolist()
+
+def xyxy_to_xywh(bboxes):
+    bboxes = torch.tensor(bboxes)
+    bboxes_xywh = torch.tensor(bboxes)
+    bboxes_xywh[:, 0:2] = (bboxes[:, 0:2] + bboxes[:, 2:4]) / 2
+    bboxes_xywh[:, 2:4] = bboxes[:, 2:4] - bboxes[:, 0:2]
+    bboxes_xywh[:, :-1] = torch.clamp(bboxes_xywh[:, :-1], 0, 1)
+
+    return bboxes_xywh.tolist()
 
 
 def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):

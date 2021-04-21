@@ -4,6 +4,8 @@ import os
 import torch
 import pdb
 import cv2
+import random
+import matplotlib.pyplot as plt
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 
@@ -11,7 +13,9 @@ from util import (
     cells_to_bboxes,
     iou_width_height as iou,
     non_max_suppression as nms,
-    plot_image
+    plot_image,
+    xywh_to_xyxy,
+    xyxy_to_xywh
 )
 
 
@@ -22,8 +26,80 @@ def readId(root):
     return ids
 
 
+def mosaic(root, idxs, output_size, scale_range, filter_scale=1 / 50):
+
+    output_img = np.zeros([output_size[0], output_size[1], 3], dtype=np.uint8)
+    scale_x = scale_range[0] + random.random() * (scale_range[1] - scale_range[0])  # 0.3 + 0~1 * (0.7-0.3)
+    scale_y = scale_range[0] + random.random() * (scale_range[1] - scale_range[0])
+    divid_point_x = int(scale_x * output_size[1])
+    divid_point_y = int(scale_y * output_size[0])
+
+    new_anno = []
+
+    for i, idx in enumerate(idxs):
+        try:
+            img = cv2.imread(os.path.join(root, "images", idx + ".jpg"))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        except:
+            image = np.array(Image.open(os.path.join(root, "images", idx+".jpg")).convert('RGB'))
+
+        bboxes = np.roll(np.loadtxt(fname=os.path.join(root, "labels", idx+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
+        bboxes[:,:4] = bboxes[:,:4] - 1e-5
+        img_annos = xywh_to_xyxy(bboxes)
+
+
+        if i == 0:  # top-left
+            img = cv2.resize(img, (divid_point_x, divid_point_y))
+            output_img[:divid_point_y, :divid_point_x, :] = img  # 좌상단에 이미지 덮어 씌움
+            for bbox in img_annos:  # 좌상단에 붙을 이미지의 bbox이므로 이미지가 줄어든 scale만큼 줄여준다.
+                xmin = bbox[0] * scale_x
+                ymin = bbox[1] * scale_y
+                xmax = bbox[2] * scale_x
+                ymax = bbox[3] * scale_y
+                new_anno.append([xmin, ymin, xmax, ymax, bbox[4]])
+
+        elif i == 1:  #top-right
+            img = cv2.resize(img, (output_size[1]-divid_point_x, divid_point_y))
+            output_img[:divid_point_y, divid_point_x:output_size[1], :] = img
+            for bbox in img_annos:
+                xmin = scale_x + bbox[0] * (1 - scale_x)
+                ymin = bbox[1] * scale_y
+                xmax = scale_x + bbox[2] * (1 - scale_x)
+                ymax = bbox[3] * scale_y
+                new_anno.append([xmin, ymin, xmax, ymax, bbox[4]])
+
+        elif i == 2:  # bottom-left
+            img = cv2.resize(img, (divid_point_x, output_size[0]-divid_point_y))
+            output_img[divid_point_y:output_size[0], :divid_point_x, :] = img
+            for bbox in img_annos:
+                xmin = bbox[0] * scale_x
+                ymin = scale_y + bbox[1] * (1-scale_y)
+                xmax = bbox[2] * scale_x
+                ymax = scale_y + bbox[3] * (1 - scale_y)
+                new_anno.append([xmin, ymin, xmax, ymax, bbox[4]])
+
+        else:  # bottom-right
+            img = cv2.resize(img, (output_size[1]-divid_point_x, output_size[0]-divid_point_y))
+            output_img[divid_point_y:output_size[0], divid_point_x:output_size[1], :] = img
+            for bbox in img_annos:
+                xmin = scale_x + bbox[0] * (1 - scale_x)
+                ymin = scale_y + bbox[1] * (1 - scale_y)
+                xmax = scale_x + bbox[2] * (1 - scale_x)
+                ymax = scale_y + bbox[3] * (1 - scale_y)
+                new_anno.append([xmin, ymin, xmax, ymax, bbox[4]])
+
+    if 0 < filter_scale:
+        new_anno = [anno for anno in new_anno if
+                    filter_scale < (anno[2] - anno[0]) and filter_scale < (anno[3] - anno[1])]
+
+    new_ano_xywh = xyxy_to_xywh(new_anno)
+
+    return output_img, new_ano_xywh
+
+
+
 class YOLODataset(Dataset):
-    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None):
+    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None, mosaic=True):
         self.ids = readId(root)
         self.root = root
         self.image_size = image_size
@@ -34,25 +110,35 @@ class YOLODataset(Dataset):
         self.num_anchors_per_scale = self.num_anchors // 3
         self.C = C
         self.ignore_iou_thresh = 0.5
+        self.mosaic = mosaic
 
     def __len__(self):
         return len(self.ids)
 
     def __getitem__(self, idx):
-        id = self.ids[idx]
-        try:
-            image = cv2.imread(os.path.join(self.root, "images", id + ".jpg"))
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        except:
-            image = np.array(Image.open(os.path.join(self.root, "images", id+".jpg")).convert('RGB'))
 
-        # 공백 기준으로 나눔 + 최소 2차원 array로 반환
-        # np.roll : 첫번째 원소를 4칸 밀고 나머지를 앞으로 끌어옴  (0 ,1 ,2 ,3 ,4) -> (1, 2, 3, 4, 0)
-        # 즉 label값을 0번째에서 4번째로 이동
-        bboxes = np.roll(np.loadtxt(fname=os.path.join(self.root, "labels", id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
-        bboxes[:,:4] = bboxes[:,:4] - 1e-5
-        # 1e-5를 빼준 이유는 albumentation에서 box transform을 할 때 bbox 값에 1이 들어가면 반환될때 1이 넘어가는 오류가 있어서 이렇게 변경함.
-        bboxes = bboxes.tolist()  # 2차원 리스트
+        if self.mosaic:
+            idxs = [self.ids[idx]]
+            [idxs.append(self.ids[random.randint(0, len(self.ids))]) for _ in range(3)]
+            image, bboxes = mosaic(self.root, idxs, (416, 416), (0.3, 0.7), filter_scale=1 / 50)
+
+
+        else:
+            id = self.ids[idx]
+            try:
+                image = cv2.imread(os.path.join(self.root, "images", id + ".jpg"))
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            except:
+                image = np.array(Image.open(os.path.join(self.root, "images", id+".jpg")).convert('RGB'))
+
+            # 공백 기준으로 나눔 + 최소 2차원 array로 반환
+            # np.roll : 첫번째 원소를 4칸 밀고 나머지를 앞으로 끌어옴  (0 ,1 ,2 ,3 ,4) -> (1, 2, 3, 4, 0)
+            # 즉 label값을 0번째에서 4번째로 이동
+            bboxes = np.roll(np.loadtxt(fname=os.path.join(self.root, "labels", id+".txt"), delimiter=" ", ndmin=2), 4, axis=1)
+            bboxes[:,:4] = bboxes[:,:4] - 1e-5
+            # 1e-5를 빼준 이유는 albumentation에서 box transform을 할 때 bbox 값에 1이 들어가면 반환될때 1이 넘어가는 오류가 있어서 이렇게 변경함.
+            bboxes = bboxes.tolist()  # 2차원 리스트
+
 
         if self.transform:
             augmentations = self.transform(image=image, bboxes=bboxes)
@@ -92,7 +178,7 @@ class YOLODataset(Dataset):
                 elif not anchor_taken and iou_anchors[anchor_idx] > self.ignore_iou_thresh:
                     targets[scale_idx][anchor_on_scale, i, j, 0] = -1
                     '''
-                    68번줄부터에 대한 설명: 현재 하고있는게 한 이미지에 있는 여러 정답박스중(물론 물체가 하나라서 정답박스가 하나일 수 있음) 
+                    현재 하고있는게 한 이미지에 있는 여러 정답박스중(물론 물체가 하나라서 정답박스가 하나일 수 있음) 
                     한개의 박스에 대한 정답을 세개의 스케일(13x13  26x26  52x52)에서 해당 위치에 o_p = 1, bbox값,라벨을 설정하고 있다.
                     위 과정을 9개의 anchor box와 정답박스의 크기를 비교해서 정답박스의 크기와 가장 일치하는 순서대로 진행을 하게되는데
                     첫번째 값의 인덱스가 3라면 3번째 앵커박스 즉 32x32 의 0번째 위치에 o_p가 1이 되는것이다. -> target[1][0, 행, 열, 0] = 1
@@ -103,9 +189,7 @@ class YOLODataset(Dataset):
                     -> 즉 박스는 3개의 셀 스케일당(13x13 26x26 52x52) 하나의 앵커박스를 정답으로 가지고 있도록 한다. 
     
                     '''
-
         return image, tuple(targets)
-
 
 
 def test():
@@ -115,7 +199,8 @@ def test():
     dataset = YOLODataset(
         root=config.VAL_DIR,
         anchors=anchors,
-        transform=transform
+        transform=transform,
+        mosaic=True
     )
     S = [13, 26, 52]
 
@@ -152,10 +237,7 @@ def test():
         plot_image(x[0].permute(1,2,0).to('cpu'), boxes)
 
 
-
 if __name__ == "__main__":
     test()
-
-
 
 

@@ -22,7 +22,7 @@ class YOLOLoss(nn.Module):
 
         # Constants signifying how much to pay for each respectivve part of the loss
         self.lambda_class = 1
-        self.lambda_noobj = 1
+        self.lambda_noobj = 10
         self.lambda_obj = 1
         self.lambda_box = 10
 

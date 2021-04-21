@@ -26,6 +26,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
     loop = tqdm(train_loader, leave=True)
     losses = []
     for batch_idx, (x, y) in enumerate(loop):
+
         x = x.to(config.DEVICE)
         y0, y1, y2 = (
             y[0].to(config.DEVICE),
