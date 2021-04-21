@@ -53,7 +53,7 @@ while True:
         )[0]  # batch 제외 (num_anchors * S * S, 6)
 
     #boxes = non_max_suppression(boxes, iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD, box_format='midpoint')
-    boxes = my_non_max_suppression(boxes, iou_threshold=0.3, threshold=config.CONF_THRESHOLD, score_threshold=0.3, box_format='midpoint', method='linear')
+    boxes = my_non_max_suppression(boxes, iou_threshold=0.3, threshold=config.CONF_THRESHOLD, score_threshold=0.3, box_format='midpoint', method='gaussian')
 
     print(len(boxes))
     # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
