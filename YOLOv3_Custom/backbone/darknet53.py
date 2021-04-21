@@ -53,8 +53,8 @@ class Darknet53(nn.Module):
         self.residual_block4 = self._make_layer(block, in_channels=512, num_blocks=8)
         self.conv6 = Conv(512, 1024, 3, 2, 1)
         self.residual_block5 = self._make_layer(block, in_channels=1024, num_blocks=4)
-        self.global_avg_pool = nn.AdaptiveMaxPool2d(1)
-        self.fc = nn.Linear(1024, num_classes)
+        # self.global_avg_pool = nn.AdaptiveMaxPool2d(1)
+        # self.fc = nn.Linear(1024, num_classes)
 
 
     def _make_layer(self, block, in_channels, num_blocks):
@@ -75,9 +75,9 @@ class Darknet53(nn.Module):
         out = self.residual_block4(out)
         out = self.conv6(out)
         out = self.residual_block5(out)
-        out = self.global_avg_pool(out)
-        out = out.view(-1, 1024)
-        out = self.fc(out)
+        # out = self.global_avg_pool(out)
+        # out = out.view(-1, 1024)
+        # out = self.fc(out)
 
         return out
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     model = darknet53_model(1000)
     inputs = torch.rand((4, 3, 416, 416))
     outputs = model(inputs)
-    assert outputs.shape == (4, 1000)
+    # assert outputs.shape == (4, 1000)
     print("Success!!")
     # print(model)
     summary.summary(model, input_size=(3, 416, 416), device='cpu')

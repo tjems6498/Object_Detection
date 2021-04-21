@@ -235,7 +235,8 @@ def mean_average_precision(
     return sum(average_precisions) / len(average_precisions)
 
 
-#
+
+
 def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
 
     # 코드 줄여보기
@@ -269,6 +270,7 @@ def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
     box2_area = abs((box2_x2 - box2_x1) * (box2_y2 - box2_y1))
 
     return intersection / (box1_area + box2_area - intersection + 1e-6)
+
 
 
 def plot_image(image, boxes):

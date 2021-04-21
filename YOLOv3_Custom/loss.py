@@ -22,12 +22,13 @@ class YOLOLoss(nn.Module):
 
         # Constants signifying how much to pay for each respectivve part of the loss
         self.lambda_class = 1
-        self.lambda_noobj = 10
+        self.lambda_noobj = 1  # 10 -> 1
         self.lambda_obj = 1
-        self.lambda_box = 10
+        self.lambda_box = 1
 
-    def forward(self, predictions, target, anchors):  # (N, 3, 13, 13, 9), (n,3,13,13,6) (scaled anchor)
+    def forward(self, predictions, target, anchors):  # (N, 3, 13, 13, 17), (n,3,13,13,6) (scaled anchor)
         # Check where obj and noobj (we ignore if target == -1)
+        # 6 : (object_prob, x, y, w, h, class)
         obj = target[..., 0] == 1
         noobj = target[..., 0] == 0
 
