@@ -120,7 +120,7 @@ class YOLODataset(Dataset):
         if self.mosaic:
             idxs = [self.ids[idx]]
             [idxs.append(self.ids[random.randint(0, len(self.ids)-1)]) for _ in range(3)]
-            image, bboxes = mosaic(self.root, idxs, (416, 416), (0.5, 0.5), filter_scale=1 / 50)
+            image, bboxes = mosaic(self.root, idxs, (416, 416), (0.3, 0.7), filter_scale=1 / 50)
 
 
         else:
