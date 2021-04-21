@@ -1,15 +1,12 @@
 '''
 class loss는 데이터에따라  bce를 쓸지 안쓸지 정함
-
 '''
-
 
 import random
 import torch
 import torch.nn as nn
 
 from util import intersection_over_union
-
 
 class YOLOLoss(nn.Module):
     def __init__(self):
