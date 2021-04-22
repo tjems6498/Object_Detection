@@ -67,6 +67,7 @@ class YOLOLoss(nn.Module):
         # ================== #
         #   FOR CLASS LOSS   #
         # ================== #
+        # 우리의 라벨은 과일과 수박이 있는 multi label clf 가 아니라 수박,사과 같은 multi class clf이기 때문에 논문과는 다르게 crossentropy 사용
         class_loss = self.entropy(
             (predictions[..., 5:][obj]), (target[..., 5][obj].long())
         )
