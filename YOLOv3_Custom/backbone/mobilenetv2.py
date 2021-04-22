@@ -115,18 +115,18 @@ class MobileNetV2(nn.Module):
         self.features = nn.Sequential(*self.features)
 
         # Average pooling layer
-        self.avg = nn.AvgPool2d(7, 7)
+        # self.avg = nn.AvgPool2d(7, 7)
         # building classifier
-        self.classifier = nn.Linear(self.last_channel, n_class)
+        # self.classifier = nn.Linear(self.last_channel, n_class)
 
         self._initialize_weights()
 
     def forward(self, x):
         # pdb.set_trace()
         x = self.features(x)
-        x = self.avg(x)
-        x = x.view(-1, self.last_channel)
-        x = self.classifier(x)
+        # x = self.avg(x)
+        # x = x.view(-1, self.last_channel)
+        # x = self.classifier(x)
         return x
 
     # 초기 weight 설정
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     model = mobilenet_v2(False)
     model = model.cuda()
     summary(model, input_size=(3, 416, 416))
-    print(model)
+    # print(model)
 
 
 

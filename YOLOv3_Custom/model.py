@@ -18,7 +18,7 @@ List is structured by 'B' indicating a residual block followed by the number of 
 '''
 
 config = [
-    # (32, 3, 1),
+    # (32, 3, 1),  # Darknet-53(backbone)
     # (64, 3, 2),
     # ["B", 1],
     # (128, 3, 2),
@@ -28,8 +28,8 @@ config = [
     # (512, 3, 2),
     # ["B", 8],
     # (1024, 3, 2),
-    # ["B", 4],  # 여기까지 Darknet-53
-    (512, 1, 1),
+    # ["B", 4],
+    (512, 1, 1),  # yolo v3 head
     (1024, 3, 1),
     "S",
     (256, 1, 1),
@@ -158,6 +158,7 @@ class YOLOv3(nn.Module):
         outputs = []  # for each scale
         route_connections = []
 
+
         x, concat1, concat2 = self.backbone_model(x)
         route_connections.append(concat1)
         route_connections.append(concat2)
@@ -181,15 +182,28 @@ class YOLOv3(nn.Module):
         return outputs  # [(n, 3, 13, 13, 16), (n, 3, 26, 26, 16), (n, 3, 52, 52, 16)]
 
     def _initialize_weights(self):
+        # for m in self.layers.modules():
+        #     if isinstance(m, nn.Conv2d):
+        #         n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+        #         m.weight.data.normal_(0, math.sqrt(2. / n))
+
+        #         if m.bias is not None:
+        #             m.bias.data.zero_()
+
+        #     elif isinstance(m, nn.BatchNorm2d):
+        #         m.weight.data.fill_(1)
+        #         m.bias.data.zero_()
+
         for m in self.layers.modules():
             if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                nn.init.kaiming_uniform_(m.weight)
+
                 if m.bias is not None:
-                    m.bias.data.zero_()
+                    nn.init.constant_(m.bias, 0)
+
             elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
 
 if __name__ == '__main__':
