@@ -192,7 +192,6 @@ class YOLOv3(nn.Module):
                 m.bias.data.zero_()
 
 
-
 if __name__ == '__main__':
     num_classes = 11
     IMAGE_SIZE = 416
