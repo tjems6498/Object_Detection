@@ -127,7 +127,7 @@ class YOLODataset(Dataset):
             id = self.ids[idx]
             try:
                 image = cv2.imread(os.path.join(self.root, "images", id + ".jpg"))
-                # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             except:
                 image = np.array(Image.open(os.path.join(self.root, "images", id+".jpg")).convert('RGB'))
 

@@ -167,7 +167,7 @@ if __name__ == '__main__':
     summary(model, input_size=(3, 416, 416))
     print(model)
 
-# 3,504,872
+
 
 
 
