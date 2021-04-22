@@ -99,7 +99,7 @@ def mosaic(root, idxs, output_size, scale_range, filter_scale=1 / 50):
 
 
 class YOLODataset(Dataset):
-    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None, mosaic=True):
+    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None, mosaic=False):
         self.ids = readId(root)
         self.root = root
         self.image_size = image_size
@@ -127,7 +127,7 @@ class YOLODataset(Dataset):
             id = self.ids[idx]
             try:
                 image = cv2.imread(os.path.join(self.root, "images", id + ".jpg"))
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             except:
                 image = np.array(Image.open(os.path.join(self.root, "images", id+".jpg")).convert('RGB'))
 
