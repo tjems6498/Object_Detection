@@ -57,10 +57,11 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
 
 def main():
     model = YOLOv3(num_classes=config.NUM_CLASSES, backbone=opt.backbone, pretrained_weight=opt.pretrained_weight).to(config.DEVICE)
-    for name, param in model.named_parameters():
-        if name in ['layers.0.conv.weight']:
-            break
-        param.requires_grad = False  # backbone weight freeze
+    # # backbone weight freeze
+    # for name, param in model.named_parameters():
+    #     if name in ['layers.0.conv.weight']:
+    #         break
+    #     param.requires_grad = False
 
 
     optimizer = optim.Adam(
