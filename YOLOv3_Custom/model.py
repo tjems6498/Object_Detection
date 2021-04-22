@@ -1,10 +1,11 @@
+import math
 import torch
 import torch.nn as nn
 import pdb
-import numpy as np
 import torchsummary as summary
-from backbone import *
+from backbone.darknet53 import darknet53_model
 import config as cf
+
 
 '''
 Information about architecture config:
@@ -17,17 +18,17 @@ List is structured by 'B' indicating a residual block followed by the number of 
 '''
 
 config = [
-    (32, 3, 1),
-    (64, 3, 2),
-    ["B", 1],
-    (128, 3, 2),
-    ["B", 2],
-    (256, 3, 2),
-    ["B", 8],
-    (512, 3, 2),
-    ["B", 8],
-    (1024, 3, 2),
-    ["B", 4],  # 여기까지 Darknet-53
+    # (32, 3, 1),
+    # (64, 3, 2),
+    # ["B", 1],
+    # (128, 3, 2),
+    # ["B", 2],
+    # (256, 3, 2),
+    # ["B", 8],
+    # (512, 3, 2),
+    # ["B", 8],
+    # (1024, 3, 2),
+    # ["B", 4],  # 여기까지 Darknet-53
     (512, 1, 1),
     (1024, 3, 1),
     "S",
@@ -94,21 +95,24 @@ class ScalePrediction(nn.Module):
     def forward(self, x):
         # x = (n, 512, 13, 13) or (n, 512, 26, 26) or (n, 512, 52, 52)
         return(
-            self.pred(x)  # (n, 27, 13, 13), (n, 27, 26, 26), (n, 27, 52, 52)
-            .reshape(x.shape[0], 3, self.num_classes+5, x.shape[2], x.shape[3])  # (n, 3, 9, 13, 13), (n, 3, 9, 26, 26), (n, 3, 9, 52, 52)
-            .permute(0, 1, 3, 4, 2)  # (n, 3, 13, 13, 9), (n, 3, 26, 26, 9), (n, 3, 52, 52, 9)
+            self.pred(x)  # (n, 48, 13, 13), (n, 48, 26, 26), (n, 48, 52, 52)
+            .reshape(x.shape[0], 3, self.num_classes+5, x.shape[2], x.shape[3])  # (n, 3, 16, 13, 13), (n, 3, 16, 26, 26), (n, 3, 16, 52, 52)
+            .permute(0, 1, 3, 4, 2)  # (n, 3, 13, 13, 16), (n, 3, 26, 26, 16), (n, 3, 52, 52, 16)
         )
 
 
 class YOLOv3(nn.Module):
-    def __init__(self, in_channels=3, num_classes=4, pretrained_weight=''):
+    def __init__(self, in_channels=1024, num_classes=4, backbone='darknet53', pretrained_weight='darknet53_pretrained.pth.tar'):
         super().__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
-        self.layers = self._create_conv_layers()
-        if pretrained_weight:
-            print('Loading Pretrained model!')
-            self.load_pretrained_layers(pretrained_weight)
+
+        if backbone == 'darknet53':  # backbone (pretrained or not)
+            self.backbone_model = darknet53_model(cf.DEVICE, pretrained_weight)
+
+        self.layers = self._create_conv_layers()  # head layers
+        self._initialize_weights()  # head만 initialize
+
 
     def _create_conv_layers(self):
         layers = nn.ModuleList()
@@ -131,6 +135,7 @@ class YOLOv3(nn.Module):
                 num_repeats = module[1]
                 layers.append(ResidualBlock(in_channels,num_repeats=num_repeats,))
 
+
             elif isinstance(module, str):
                 if module == "S":  # predict layer
                     layers += [
@@ -152,6 +157,11 @@ class YOLOv3(nn.Module):
     def forward(self, x):
         outputs = []  # for each scale
         route_connections = []
+
+        x, concat1, concat2 = self.backbone_model(x)
+        route_connections.append(concat1)
+        route_connections.append(concat2)
+
         for layer in self.layers:
             if isinstance(layer, ScalePrediction):
                 outputs.append(layer(x))
@@ -159,31 +169,32 @@ class YOLOv3(nn.Module):
 
             x = layer(x)
 
-            if isinstance(layer, ResidualBlock) and layer.num_repeats == 8:
-                route_connections.append(x)  # 값 저장
+            # if isinstance(layer, ResidualBlock) and layer.num_repeats == 8:
+            #     route_connections.append(x)  # 값 저장
 
-            elif isinstance(layer, nn.Upsample):
+
+            if isinstance(layer, nn.Upsample):
                 # upsample 한 후의 결과와 route_connections 맨 뒤에 저장된 값과 concat
                 x = torch.cat([x, route_connections[-1]], dim=1)  # concatenate with channels  (n, 768, 26, 26), (n, 384, 52, 52)
                 route_connections.pop()
 
-        return outputs  # [(n, 3, 13, 13, 9), (n, 3, 26, 26, 9), (n, 3, 52, 52, 9)]
-#
-    def load_pretrained_layers(self, pretrained_weight):
-        state_dict = self.state_dict()
-        param_names = list(state_dict.keys())
+        return outputs  # [(n, 3, 13, 13, 16), (n, 3, 26, 26, 16), (n, 3, 52, 52, 16)]
 
-        check_point = torch.load(pretrained_weight, map_location=cf.DEVICE)
-        pretrained_state_dict = check_point['state_dict']
-        pretrained_param_names = list(check_point['state_dict'].keys())
+    def _initialize_weights(self):
+        for m in self.layers.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
-        for i, param in enumerate(param_names[:312]):  # fc layer 전까지 weight 적용
-            state_dict[param] = pretrained_state_dict[pretrained_param_names[i]]
-        self.load_state_dict(state_dict)
 
 
 if __name__ == '__main__':
-    num_classes = 4
+    num_classes = 11
     IMAGE_SIZE = 416
     model = YOLOv3(num_classes=num_classes)
     x = torch.randn((2,3,IMAGE_SIZE, IMAGE_SIZE))
@@ -191,7 +202,8 @@ if __name__ == '__main__':
     assert model(x)[0].shape == (2, 3, IMAGE_SIZE // 32, IMAGE_SIZE // 32, num_classes + 5)
     assert model(x)[1].shape == (2, 3, IMAGE_SIZE // 16, IMAGE_SIZE // 16, num_classes + 5)
     assert model(x)[2].shape == (2, 3, IMAGE_SIZE // 8, IMAGE_SIZE // 8, num_classes + 5)
-    summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
+    # summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
     # print(model)
+    print(out[0].shape)
     print("Success!")
 

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+import pdb
 
 class Conv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
@@ -39,8 +39,9 @@ class DarkResidualBlock(nn.Module):
         return out
 
 class Darknet53(nn.Module):
-    def __init__(self, block, num_classes):
+    def __init__(self, block, device, pretrained_weight='../darknet53_pretrained.pth.tar', ):
         super(Darknet53, self).__init__()
+        self.device = device
 
         self.conv1 = Conv(3, 32, 3, 1, 1)
         self.conv2 = Conv(32, 64, 3, 2, 1)
@@ -55,6 +56,10 @@ class Darknet53(nn.Module):
         self.residual_block5 = self._make_layer(block, in_channels=1024, num_blocks=4)
         # self.global_avg_pool = nn.AdaptiveMaxPool2d(1)
         # self.fc = nn.Linear(1024, num_classes)
+
+        if pretrained_weight:
+            print('Loading Pretrained model!')
+            self.load_pretrained_layers(pretrained_weight)
 
 
     def _make_layer(self, block, in_channels, num_blocks):
@@ -71,24 +76,40 @@ class Darknet53(nn.Module):
         out = self.residual_block2(out)
         out = self.conv4(out)
         out = self.residual_block3(out)
+        concat1 = out
         out = self.conv5(out)
         out = self.residual_block4(out)
+        concat2 = out
         out = self.conv6(out)
         out = self.residual_block5(out)
         # out = self.global_avg_pool(out)
         # out = out.view(-1, 1024)
         # out = self.fc(out)
 
-        return out
+        return out, concat1, concat2
+
+    def load_pretrained_layers(self, pretrained_weight):
+        state_dict = self.state_dict()
+        param_names = list(state_dict.keys())
+
+        check_point = torch.load(pretrained_weight, map_location=self.device)
+        pretrained_state_dict = check_point['state_dict']
+        pretrained_param_names = list(check_point['state_dict'].keys())
+
+        for i, param in enumerate(param_names):  # fc layer 전까지 weight 적용
+            state_dict[param] = pretrained_state_dict[pretrained_param_names[i]]
+
+        self.load_state_dict(state_dict)
 
 
-def darknet53_model(num_classes):
-    return Darknet53(DarkResidualBlock, num_classes)
+def darknet53_model(device, pretrained_weight):
+    return Darknet53(DarkResidualBlock, device=device, pretrained_weight=pretrained_weight)
 
 
 if __name__ == '__main__':
     import torchsummary as summary
-    model = darknet53_model(1000)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = darknet53_model(device, '../darknet53_pretrained.pth.tar')
     inputs = torch.rand((4, 3, 416, 416))
     outputs = model(inputs)
     # assert outputs.shape == (4, 1000)
