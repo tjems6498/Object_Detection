@@ -4,6 +4,7 @@ import torch.nn as nn
 import pdb
 import torchsummary as summary
 from backbone.darknet53 import darknet53_model
+from backbone.efficientNet import EfficientNet
 import config as cf
 
 
@@ -102,14 +103,15 @@ class ScalePrediction(nn.Module):
 
 
 class YOLOv3(nn.Module):
-    def __init__(self, in_channels=1024, num_classes=4, backbone='darknet53', pretrained_weight='darknet53_pretrained.pth.tar'):
+    def __init__(self, in_channels=1280, num_classes=4, backbone='darknet53', pretrained_weight='darknet53_pretrained.pth.tar'):
         super().__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
-
+        self.backbone = backbone
         if backbone == 'darknet53':  # backbone (pretrained or not)
             self.backbone_model = darknet53_model(cf.DEVICE, pretrained_weight)
-
+        elif backbone == 'efficientnet':
+            self.backbone_model = EfficientNet('b0')
         self.layers = self._create_conv_layers()  # head layers
         self._initialize_weights()  # head만 initialize
 
@@ -158,10 +160,12 @@ class YOLOv3(nn.Module):
         outputs = []  # for each scale
         route_connections = []
 
-
-        x, concat1, concat2 = self.backbone_model(x)
-        route_connections.append(concat1)
-        route_connections.append(concat2)
+        if self.backbone == 'darknet53':
+            x, concat1, concat2 = self.backbone_model(x)
+            route_connections.append(concat1)
+            route_connections.append(concat2)
+        else:
+            x = self.backbone_model(x)
 
         for layer in self.layers:
             if isinstance(layer, ScalePrediction):
@@ -174,7 +178,7 @@ class YOLOv3(nn.Module):
             #     route_connections.append(x)  # 값 저장
 
 
-            if isinstance(layer, nn.Upsample):
+            if isinstance(layer, nn.Upsample) and self.backbone == 'darknet53':
                 # upsample 한 후의 결과와 route_connections 맨 뒤에 저장된 값과 concat
                 x = torch.cat([x, route_connections[-1]], dim=1)  # concatenate with channels  (n, 768, 26, 26), (n, 384, 52, 52)
                 route_connections.pop()
@@ -209,7 +213,7 @@ class YOLOv3(nn.Module):
 if __name__ == '__main__':
     num_classes = 11
     IMAGE_SIZE = 416
-    model = YOLOv3(num_classes=num_classes)
+    model = YOLOv3(num_classes=num_classes, backbone='efficientnet')
     x = torch.randn((2,3,IMAGE_SIZE, IMAGE_SIZE))
     out = model(x)
     assert model(x)[0].shape == (2, 3, IMAGE_SIZE // 32, IMAGE_SIZE // 32, num_classes + 5)
