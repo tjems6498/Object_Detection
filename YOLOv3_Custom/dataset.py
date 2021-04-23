@@ -118,8 +118,8 @@ class YOLODataset(Dataset):
     def __getitem__(self, idx):
 
         if self.mosaic:
-            idxs = [self.ids[idx]]
-            [idxs.append(self.ids[random.randint(0, len(self.ids)-1)]) for _ in range(3)]
+            idxs = [self.ids[idx]]  # 현재 뽑힌 인덱스
+            [idxs.append(self.ids[random.randint(0, len(self.ids)-1)]) for _ in range(3)]  # 랜덤 인덱스 3개 더 추가
             image, bboxes = mosaic(self.root, idxs, (416, 416), (0.3, 0.7), filter_scale=1 / 50)
 
 
@@ -204,7 +204,7 @@ def test():
     )
     S = [13, 26, 52]
 
-    scaled_anchors = torch.tensor(anchors) * torch.tensor(S).unsqueeze(1).unsqueeze(1).repeat(1,3,2)  # (3, 3, 2)
+    scaled_anchors = torch.tensor(anchors) * torch.tensor(S).unsqueeze(1).unsqueeze(1).repeat(1,3,2)  # (3,3,2) * (3,3,2)
     '''
     scaled_anchors
     tensor([[[ 3.6400,  2.8600],

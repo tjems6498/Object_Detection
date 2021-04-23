@@ -4,6 +4,7 @@ import torch
 import torch.optim as optim
 import yaml
 import matplotlib.pyplot as plt
+import numpy as np
 from model import YOLOv3
 from tqdm import tqdm
 from util import (
@@ -29,7 +30,6 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
     losses = []
     for batch_idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
-
         y0, y1, y2 = (
             y[0].to(config.DEVICE),
             y[1].to(config.DEVICE),
@@ -37,6 +37,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
         )
 
         # x, y_a, y_b, lam = mixup_data(x, y)
+
         # y_a0, y_a1, y_a2 = (
         #     y_a[0].to(config.DEVICE),
         #     y_a[1].to(config.DEVICE),
@@ -47,7 +48,15 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
         #     y_b[1].to(config.DEVICE),
         #     y_b[2].to(config.DEVICE)
         # )
-
+        # ''' img show'''
+        # inp = x[1].cpu().numpy().transpose((1, 2, 0))
+        # mean = np.array([0.6340, 0.5614, 0.4288])
+        # std = np.array([0.2803, 0.2786, 0.3126])
+        # inp = std * inp + mean
+        # inp = np.clip(inp, 0, 1)
+        # plt.imshow(inp)
+        # plt.show()
+        # pdb.set_trace()
 
         with torch.cuda.amp.autocast():
             out = model(x)  # [(2, 3, 13, 13, 16), (2, 3, 26, 26, 16), (2, 3, 52, 52, 16)]
@@ -94,7 +103,7 @@ def main():
         optimizer, factor=0.1, patience=5, verbose=True
     )
 
-    train_loader, test_loader = get_loaders()  # test loader 추가해야함
+    train_loader, test_loader = get_loaders()
 
     if config.LOAD_MODEL:
         load_checkpoint(

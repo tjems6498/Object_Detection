@@ -27,8 +27,6 @@ def mixup_data(x, y):
     return mixed_x, y_a, y_b, lam
 
 
-
-
 def mixup_criterion(criterion, pred, y_a, y_b, lam, scaled_anchor):
     return lam * criterion(pred, y_a, scaled_anchor) + (1-lam) * criterion(pred, y_b, scaled_anchor)
 
