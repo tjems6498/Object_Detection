@@ -3,7 +3,7 @@ import config
 import torch
 import torch.optim as optim
 import yaml
-
+import matplotlib.pyplot as plt
 from model import YOLOv3
 from tqdm import tqdm
 from util import (
@@ -29,32 +29,38 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
     losses = []
     for batch_idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
-        x, y_a, y_b, lam = mixup_data(x, y)
 
-        y_a0, y_a1, y_a2 = (
-            y_a[0].to(config.DEVICE),
-            y_a[1].to(config.DEVICE),
-            y_a[2].to(config.DEVICE)
+        y0, y1, y2 = (
+            y[0].to(config.DEVICE),
+            y[1].to(config.DEVICE),
+            y[2].to(config.DEVICE)
         )
-        y_b0, y_b1, y_b2 = (
-            y_b[0].to(config.DEVICE),
-            y_b[1].to(config.DEVICE),
-            y_b[2].to(config.DEVICE)
-        )
+
+        # x, y_a, y_b, lam = mixup_data(x, y)
+        # y_a0, y_a1, y_a2 = (
+        #     y_a[0].to(config.DEVICE),
+        #     y_a[1].to(config.DEVICE),
+        #     y_a[2].to(config.DEVICE)
+        # )
+        # y_b0, y_b1, y_b2 = (
+        #     y_b[0].to(config.DEVICE),
+        #     y_b[1].to(config.DEVICE),
+        #     y_b[2].to(config.DEVICE)
+        # )
 
 
         with torch.cuda.amp.autocast():
             out = model(x)  # [(2, 3, 13, 13, 16), (2, 3, 26, 26, 16), (2, 3, 52, 52, 16)]
-            # loss = (
-            #     loss_fn(out[0], y0, scaled_anchors[0])
-            #     + loss_fn(out[1], y1, scaled_anchors[1])
-            #     + loss_fn(out[2], y2, scaled_anchors[2])
-            # )
             loss = (
-                mixup_criterion(loss_fn, out[0], y_a0, y_b0, lam, scaled_anchors[0])  # 13x13
-                + mixup_criterion(loss_fn, out[1], y_a1, y_b1, lam, scaled_anchors[1])  # 26x26
-                + mixup_criterion(loss_fn, out[2], y_a2, y_b2, lam, scaled_anchors[2])  # 52x52
+                loss_fn(out[0], y0, scaled_anchors[0])
+                + loss_fn(out[1], y1, scaled_anchors[1])
+                + loss_fn(out[2], y2, scaled_anchors[2])
             )
+            # loss = (
+            #     mixup_criterion(loss_fn, out[0], y_a0, y_b0, lam, scaled_anchors[0])  # 13x13
+            #     + mixup_criterion(loss_fn, out[1], y_a1, y_b1, lam, scaled_anchors[1])  # 26x26
+            #     + mixup_criterion(loss_fn, out[2], y_a2, y_b2, lam, scaled_anchors[2])  # 52x52
+            # )
 
         losses.append(loss.item())
         optimizer.zero_grad()
@@ -140,7 +146,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
-    parser.add_argument('--batch-size', type=int, default=2, help='total batch size for all GPUs')
+    parser.add_argument('--batch-size', type=int, default=3, help='total batch size for all GPUs')
     # parser.add_argument('--img-size', type=int, default=416, help='[train, test] image sizes')
     # parser.add_argument('--num-classes', type=int, default=11, help='number of classes')
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
