@@ -29,7 +29,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
     losses = []
     for batch_idx, (x, y) in enumerate(loop):
         x = x.to(config.DEVICE)
-        x0, y_a, y_b, lam = mixup_data(x, y)
+        x, y_a, y_b, lam = mixup_data(x, y)
 
         y_a0, y_a1, y_a2 = (
             y_a[0].to(config.DEVICE),
@@ -41,6 +41,8 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
             y_b[1].to(config.DEVICE),
             y_b[2].to(config.DEVICE)
         )
+
+
         with torch.cuda.amp.autocast():
             out = model(x)  # [(2, 3, 13, 13, 16), (2, 3, 26, 26, 16), (2, 3, 52, 52, 16)]
             # loss = (
