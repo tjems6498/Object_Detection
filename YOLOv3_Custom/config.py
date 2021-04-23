@@ -13,7 +13,7 @@ NUM_WORKERS = 2  # colab
 BATCH_SIZE = 2
 IMAGE_SIZE = 416
 NUM_CLASSES = 11
-CLASSES = ['apple', 'orange','pear','watermelon','durian','lemon','grapes','pineapple','dragon fruit','oriental melon','melon']
+CLASSES = ['apple', 'orange', 'pear', 'watermelon', 'durian', 'lemon', 'grapes', 'pineapple', 'dragon fruit', 'oriental melon', 'melon']
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 1e-4
 NUM_EPOCHS = 100
@@ -24,7 +24,7 @@ S = [IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8]
 PIN_MEMORY = True
 LOAD_MODEL = False
 SAVE_MODEL = True
-CHECKPOINT_FILE = "checkpoint.pth.tar"
+CHECKPOINT_FILE = "checkpoint.pth2.tar"
 TRAIN_DIR = 'E:\\Computer Vision\\data\\project\\fruit_yolov3\\train'
 VAL_DIR = 'E:\\Computer Vision\\data\\project\\fruit_yolov3\\valid'
 

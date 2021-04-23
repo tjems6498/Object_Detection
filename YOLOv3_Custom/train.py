@@ -14,7 +14,9 @@ from util import (
     load_checkpoint,
     check_class_accuracy,
     get_loaders,
-    seed_everything
+    seed_everything,
+    mixup_data,
+    mixup_criterion
 )
 from loss import YOLOLoss
 import pdb
@@ -26,21 +28,32 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
     loop = tqdm(train_loader, leave=True)
     losses = []
     for batch_idx, (x, y) in enumerate(loop):
-
         x = x.to(config.DEVICE)
-        y0, y1, y2 = (
-            y[0].to(config.DEVICE),
-            y[1].to(config.DEVICE),
-            y[2].to(config.DEVICE)
-        )
+        x0, y_a, y_b, lam = mixup_data(x, y)
 
+        y_a0, y_a1, y_a2 = (
+            y_a[0].to(config.DEVICE),
+            y_a[1].to(config.DEVICE),
+            y_a[2].to(config.DEVICE)
+        )
+        y_b0, y_b1, y_b2 = (
+            y_b[0].to(config.DEVICE),
+            y_b[1].to(config.DEVICE),
+            y_b[2].to(config.DEVICE)
+        )
         with torch.cuda.amp.autocast():
             out = model(x)  # [(2, 3, 13, 13, 16), (2, 3, 26, 26, 16), (2, 3, 52, 52, 16)]
+            # loss = (
+            #     loss_fn(out[0], y0, scaled_anchors[0])
+            #     + loss_fn(out[1], y1, scaled_anchors[1])
+            #     + loss_fn(out[2], y2, scaled_anchors[2])
+            # )
             loss = (
-                loss_fn(out[0], y0, scaled_anchors[0])
-                + loss_fn(out[1], y1, scaled_anchors[1])
-                + loss_fn(out[2], y2, scaled_anchors[2])
+                mixup_criterion(loss_fn, out[0], y_a0, y_b0, lam, scaled_anchors[0])  # 13x13
+                + mixup_criterion(loss_fn, out[1], y_a1, y_b1, lam, scaled_anchors[1])  # 26x26
+                + mixup_criterion(loss_fn, out[2], y_a2, y_b2, lam, scaled_anchors[2])  # 52x52
             )
+
         losses.append(loss.item())
         optimizer.zero_grad()
         scaler.scale(loss).backward()
@@ -77,7 +90,7 @@ def main():
 
     if config.LOAD_MODEL:
         load_checkpoint(
-            'checkpoint.pth.tar', model, optimizer
+            'checkpoint.pth2.tar', model, optimizer
         )
 
     scaled_anchors = (
@@ -118,7 +131,7 @@ def main():
 
             if config.SAVE_MODEL:
                 if best_map < mapval.item():
-                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth2.tar")
                     best_map = mapval.item()
 
 if __name__ == "__main__":

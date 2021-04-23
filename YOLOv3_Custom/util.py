@@ -13,6 +13,25 @@ from tqdm import tqdm
 
 import pdb
 
+def mixup_data(x, y):
+    y_a = []
+    y_b = []
+    lam = np.random.rand()  # 0~1
+    batch_size = x.shape[0]
+    index = torch.randperm(batch_size).to(config.DEVICE)  # randperm: batch_size 개수만큼 unique random index를 가진 1차원 tensor
+    mixed_x = lam * x + (1-lam) * x[index]
+    for i in range(3):
+        # pdb.set_trace()
+        y_a.append(y[i])
+        y_b.append(y[i][index])
+    return mixed_x, y_a, y_b, lam
+
+
+
+
+def mixup_criterion(criterion, pred, y_a, y_b, lam, scaled_anchor):
+    return lam * criterion(pred, y_a, scaled_anchor) + (1-lam) * criterion(pred, y_b, scaled_anchor)
+
 
 def get_mean_and_std(dataset):
     '''Compute the mean and std value of dataset.'''

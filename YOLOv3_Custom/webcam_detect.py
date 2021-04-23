@@ -20,7 +20,7 @@ cap = cv2.VideoCapture(0)
 
 torch.backends.cudnn.benchmark = True
 model = YOLOv3(num_classes=config.NUM_CLASSES, backbone='darknet53').to(config.DEVICE)
-checkpoint = torch.load('checkpoint.pth.tar', map_location=config.DEVICE)
+checkpoint = torch.load('checkpoint.pth2.tar', map_location=config.DEVICE)
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()

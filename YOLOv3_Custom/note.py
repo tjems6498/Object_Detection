@@ -7,5 +7,9 @@ import torch.optim as optim
 import torch
 import random
 
-for i in range(10):
-    print(random.randint(0, 10))
+a = torch.rand((2,3,3))
+
+print(a)
+index = torch.tensor([1,0])
+
+print(a[index])
