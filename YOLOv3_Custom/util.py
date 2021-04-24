@@ -172,7 +172,7 @@ def my_non_max_suppression(bboxes, iou_threshold, threshold, score_threshold=0.0
 
 
 def mean_average_precision(
-        pred_boxes, true_boxes, iou_threshold=0.5, box_format='midpoint', num_classes=4
+        pred_boxes, true_boxes, iou_threshold=0.5, box_format='midpoint', num_classes=11
 ):
     """
     This function calculates mean average precision (mAP)
@@ -262,7 +262,9 @@ def mean_average_precision(
         precisions = TP_cumsum / (TP_cumsum + FP_cumsum + epsilon)
         recalls = torch.cat((torch.tensor([0]), recalls))  # recall은 0부터 시작
         precisions = torch.cat((torch.tensor([1]), precisions))
-        average_precisions.append(torch.trapz(precisions, recalls))  # trapz : y축, x축 을 주면 아래 면적 계산
+        ap = torch.trapz(precisions, recalls)
+        average_precisions.append(ap)  # trapz : y축, x축 을 주면 아래 면적 계산
+        print(f"{config.CLASSES[c]} AP: {ap:.2f}")
 
     return sum(average_precisions) / len(average_precisions)
 
