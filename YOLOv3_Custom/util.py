@@ -324,7 +324,7 @@ def intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
     return intersection / (box1_area + box2_area - intersection + 1e-6)
 
 
-# bouning box regression에 사용될 giou 함수
+# bouning box regression에 사용될 giou loss 함수
 def generalized_intersection_over_union(boxes_preds, boxes_labels, box_format="midpoint"):
     '''
     Args:
@@ -360,7 +360,8 @@ def generalized_intersection_over_union(boxes_preds, boxes_labels, box_format="m
     giou = (inter_area/union) - (outer_area - union) / outer_area  # GIoU = IoU - (outer - union / outer)  빈 공간이 많을수록 giou는 작아짐
     giou = torch.clamp(giou,-1.0, 1.0)  # -1~1 사이의 값을 가짐
 
-    return giou
+    loss = 1. - giou
+    return loss.mean()
 
 
 
