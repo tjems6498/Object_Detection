@@ -3,14 +3,15 @@ import torch
 from dataset import YOLODataset
 import config
 import pdb
+from util import generalized_intersection_over_union
+import torch.nn as nn
 
 
-a = torch.rand((2,3), requires_grad=True)
+gt_bbox = torch.tensor([[0.25, 0.25, 0.5, 0.5]], dtype=torch.float32)
+pr_bbox = torch.tensor([[0.75, 0.75, 0.5, 0.5]], dtype=torch.float32)
 
-print(a)
-print(a.requires_grad)
+mse = nn.MSELoss()
+# loss = generalized_intersection_over_union(pr_bbox, gt_bbox, box_format='midpoint')
+# print(loss)
 
-b = a.detach().clone()
-print(b)
-print(b.requires_grad)
-
+print(mse(pr_bbox, gt_bbox))

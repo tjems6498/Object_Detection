@@ -113,8 +113,9 @@ def main():
     train_loader, test_loader = get_loaders()
 
     if config.LOAD_MODEL:
+        print("Model Loading!")
         load_checkpoint(
-            'checkpoint.pth2.tar', model, optimizer
+            'checkpoint.pth.tar', model, optimizer
         )
 
     scaled_anchors = (
@@ -172,7 +173,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', type=int, default=200, help='number of epochs')
     parser.add_argument('--pretrained-weight', type=str, default='darknet53_pretrained.pth.tar', help='pretrained weights file name')
     parser.add_argument('--backbone', type=str, default='darknet53', help='backbone network')
-
+    parser.add_argument('--load-model', action='store_true', help='load checkpoint')  # train시에 선언만 하면 True
     # parser.add_argument('--conf-threshold', type=float, default=0.6, help='')
     # parser.add_argument('--map-iou-threshold', type=float, default=0.5, help='')
     # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help=''

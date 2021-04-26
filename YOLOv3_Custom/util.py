@@ -358,7 +358,7 @@ def generalized_intersection_over_union(boxes_preds, boxes_labels, box_format="m
 
     union = area1 + area2 - inter_area
     giou = (inter_area/union) - (outer_area - union) / outer_area  # GIoU = IoU - (outer - union / outer)  빈 공간이 많을수록 giou는 작아짐
-    giou = torch.clamp(giou,-1.0, 1.0)  # -1~1 사이의 값을 가짐
+    giou = torch.clamp(giou, -1.0, 1.0)  # -1~1 사이의 값을 가짐
 
     loss = 1. - giou
     return loss.mean()

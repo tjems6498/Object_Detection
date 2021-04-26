@@ -44,7 +44,7 @@ train_transforms = A.Compose(
             border_mode=cv2.BORDER_CONSTANT,
         ),
         A.RandomCrop(width=IMAGE_SIZE, height=IMAGE_SIZE),
-        # A.RandomBrightnessContrast(p=0.2),  # new
+        A.RandomBrightnessContrast(p=0.2),  # new
         # A.ColorJitter(brightness=0.6, contrast=0.6, saturation=0.6, hue=0.6, p=0.4),
         A.OneOf(
             [
@@ -57,8 +57,8 @@ train_transforms = A.Compose(
         ),
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.2),
-        # A.Blur(p=0.1),
-        # A.CLAHE(p=0.1),  # 이미지가 뭔가 진해지고 선명해짐 / Doc: Apply Contrast Limited Adaptive Histogram Equalization
+        A.Blur(p=0.1),
+        A.CLAHE(p=0.1),  # 이미지가 뭔가 진해지고 선명해짐 / Doc: Apply Contrast Limited Adaptive Histogram Equalization
         # A.Posterize(p=0.1),
         # A.ToGray(p=0.1),
 
