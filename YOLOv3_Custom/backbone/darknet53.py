@@ -49,9 +49,9 @@ class Darknet53(nn.Module):
         self.conv3 = Conv(64, 128, 3, 2, 1)
         self.residual_block2 = self._make_layer(block, in_channels=128, num_blocks=2)
         self.conv4 = Conv(128, 256, 3, 2, 1)
-        self.residual_block3 = self._make_layer(block, in_channels=256, num_blocks=4)
+        self.residual_block3 = self._make_layer(block, in_channels=256, num_blocks=8)
         self.conv5 = Conv(256, 512, 3, 2, 1)
-        self.residual_block4 = self._make_layer(block, in_channels=512, num_blocks=4)
+        self.residual_block4 = self._make_layer(block, in_channels=512, num_blocks=8)
         self.conv6 = Conv(512, 1024, 3, 2, 1)
         self.residual_block5 = self._make_layer(block, in_channels=1024, num_blocks=4)
         # self.global_avg_pool = nn.AdaptiveMaxPool2d(1)
@@ -98,7 +98,7 @@ class Darknet53(nn.Module):
         pretrained_state_dict = check_point['state_dict']
         pretrained_param_names = list(check_point['state_dict'].keys())
 
-        for i, param in enumerate(param_names[:108]):  # fc layer 전까지 weight 적용
+        for i, param in enumerate(param_names):  # fc layer 전까지 weight 적용  108
             state_dict[param] = pretrained_state_dict[pretrained_param_names[i]]
 
         self.load_state_dict(state_dict)

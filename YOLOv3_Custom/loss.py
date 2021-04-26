@@ -1,12 +1,14 @@
 '''
-class loss는 데이터에따라  bce를 쓸지 안쓸지 정함
+class loss는 데이터에따라  bce를 쓸지 cross entropy를 쓸지정한다.
+우리 데이터셋은 11개의 각각의 과일이 상호 배타적 관계를 가지기 때문에 cross entropy(multi class clf)를 사용한다.
 '''
 
 import random
 import torch
 import torch.nn as nn
+import pdb
+from util import intersection_over_union, generalized_intersection_over_union
 
-from util import intersection_over_union
 
 class YOLOLoss(nn.Module):
     def __init__(self):
@@ -45,7 +47,7 @@ class YOLOLoss(nn.Module):
 
         anchors = anchors.reshape(1, 3, 1, 1, 2)  # w와 h를 가진 3개의 anchor가 모든 셀에서 계산하기위해 broad casting을 사용
         box_preds = torch.cat([self.sigmoid(predictions[..., 1:3]),torch.exp(predictions[..., 3:5])*anchors], dim=-1)
-        # 내 생각: sigmoid(tx) + Cx 가 아닌 sigmoid(tx)만 있는 이유는 차원이 (N, 3, 13, 13, 17) 에서 13x13으로 나누어져 있기 때문
+        # sigmoid(tx) + Cx 가 아닌 sigmoid(tx)만 있는 이유는 차원이 (N, 3, 13, 13, 17) 에서 이미 13x13으로 나누어져 있기 때문
         ious = intersection_over_union(box_preds[obj], target[..., 1:5][obj]).detach()  # 실제 박스와 예측이 얼마나 겹쳤는가
         # detach: gradient가 전파되지 않는 텐서생성
         object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
@@ -60,14 +62,16 @@ class YOLOLoss(nn.Module):
         predictions[..., 1:3] = self.sigmoid(predictions[..., 1:3])  # x,y coordinates
         target[..., 3:5] = torch.log(  # tw = log(Bw/Pw)
             (1e-16 + target[..., 3:5] / anchors)  # 분자가 0이 됨을 막기 위함
-        )  # prediction의 tw,th를 bw,bh로 할 수 있지만 target을 역으로 바꿔주면 better gradient flow를 갖는다고 한다.
-        box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])
-
+        )  # prediction의 tw,th를 bw,bh로 할 수 있지만 target을 오히려 역으로 바꿔 계산하면 better gradient flow를 갖는다고 한다.
+        pdb.set_trace()
+        # box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])  # same dim
+        giou = generalized_intersection_over_union(predictions[..., 1:5][obj], target[..., 1:5][obj])  # GIoU
+        box_loss = 1 - giou
 
         # ================== #
         #   FOR CLASS LOSS   #
         # ================== #
-        # 우리의 라벨은 과일과 수박이 있는 multi label clf 가 아니라 수박,사과 같은 multi class clf이기 때문에 논문과는 다르게 crossentropy 사용
+        # 우리의 라벨은 과일과 수박이 있는 multi label clf 가 아니라 수박,사과 같은 multi class clf이기 때문에 논문과는 다르게 cross entropy 사용
         class_loss = self.entropy(
             (predictions[..., 5:][obj]), (target[..., 5][obj].long())
         )
