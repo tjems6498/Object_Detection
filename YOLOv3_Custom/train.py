@@ -20,11 +20,12 @@ from util import (
     mixup_criterion
 )
 from loss import YOLOLoss
+from torch.utils.tensorboard import SummaryWriter
 import pdb
 
 
 
-def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler):
+def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler, writer, step):
     model.train()
     loop = tqdm(train_loader, leave=True)
     losses = []
@@ -81,8 +82,11 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
         mean_loss = sum(losses) / len(losses)
         loop.set_postfix(loss=mean_loss)
 
-    scheduler.step(mean_loss)
+        writer.add_scalar("Training loss", mean_loss, global_step=step)
+        step += 1
 
+    scheduler.step(mean_loss)
+    return step
 
 
 def main():
@@ -102,6 +106,9 @@ def main():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, factor=0.1, patience=5, verbose=True
     )
+    writer = SummaryWriter(
+        f"runs/fruit"
+    )
 
     train_loader, test_loader = get_loaders()
 
@@ -115,9 +122,11 @@ def main():
     ).to(config.DEVICE)
 
     best_map = 0
+    train_step = 0
+    val_step = 0
     for epoch in range(config.NUM_EPOCHS):
         print(f"Epoch:{epoch+1}")
-        train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler)
+        train_step = train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler, writer, train_step)
 
 
         # print(f"Currently epoch {epoch}")
@@ -128,7 +137,7 @@ def main():
 
         if (epoch+1) % 5 == 0:
             print("On Test loader:")
-            check_class_accuracy(model, loss_fn, test_loader, scaled_anchors, threshold=config.CONF_THRESHOLD)
+            val_step = check_class_accuracy(model, loss_fn, test_loader, scaled_anchors, writer, val_step, threshold=config.CONF_THRESHOLD)
 
             pred_boxes, true_boxes = get_evaluation_bboxes(
                 test_loader,

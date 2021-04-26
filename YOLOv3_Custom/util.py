@@ -442,7 +442,7 @@ def get_evaluation_bboxes(
 
 
 
-def check_class_accuracy(model, loss_fn, loader, scaled_anchors, threshold):
+def check_class_accuracy(model, loss_fn, loader, scaled_anchors, writer, step, threshold):
     model.eval()
     tot_class_preds, correct_class = 0, 0
     tot_noobj, correct_noobj = 0, 0
@@ -472,6 +472,8 @@ def check_class_accuracy(model, loss_fn, loader, scaled_anchors, threshold):
 
         mean_loss = sum(losses) / len(losses)
         loop.set_postfix(validation_loss=mean_loss)
+        writer.add_scalar("validation loss", mean_loss, global_step=step)
+        step += 1
 
 
         for i in range(3):
@@ -494,6 +496,7 @@ def check_class_accuracy(model, loss_fn, loader, scaled_anchors, threshold):
     print(f"No obj accuracy is: {(correct_noobj/(tot_noobj+1e-16))*100:2f}%")
     print(f"Obj accuracy is: {(correct_obj/(tot_obj+1e-16))*100:2f}%")
     model.train()
+    return step
 
 
 
