@@ -37,13 +37,14 @@ ANCHORS = [
 scale = 1.1
 train_transforms = A.Compose(
     [
-        A.LongestMaxSize(max_size=int(IMAGE_SIZE * scale)),   # 초기 이미지의 비율을 유지하면서 한쪽(w,h)이 max_size와 같도록 이미지 크기 조정
-        A.PadIfNeeded(  # 입력 이미지 size가 min_height, min_width값이 될때 까지 ""으로 채움
+        A.LongestMaxSize(max_size=int(IMAGE_SIZE * scale)),   # 초기 이미지의 비율을 유지하면서 한쪽(w,h)이 max_size와 같도록 이미지 크기 조정 (가로 세로중 한쪽이 416*1.1 이 되도록 resize)
+        A.PadIfNeeded(  # 입력 이미지 size가 min_height, min_width값이 될때 까지 0으로 채움
             min_height=int(IMAGE_SIZE * scale),
             min_width=int(IMAGE_SIZE * scale),
             border_mode=cv2.BORDER_CONSTANT,
         ),
         A.RandomCrop(width=IMAGE_SIZE, height=IMAGE_SIZE),
+        #A.RandomBrightnessContrast(p=0.2),  # new
         # A.ColorJitter(brightness=0.6, contrast=0.6, saturation=0.6, hue=0.6, p=0.4),
         A.OneOf(
             [
@@ -56,11 +57,10 @@ train_transforms = A.Compose(
         ),
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.2),
-        A.Blur(p=0.1),
+        # A.Blur(p=0.1),
         # A.CLAHE(p=0.1),  # 이미지가 뭔가 진해지고 선명해짐 / Doc: Apply Contrast Limited Adaptive Histogram Equalization
         # A.Posterize(p=0.1),
         # A.ToGray(p=0.1),
-        # A.ChannelShuffle(p=0.05),
 
         A.Normalize(mean=[0.6340, 0.5614, 0.4288], std=[0.2803, 0.2786, 0.3126], max_pixel_value=255,),
         ToTensorV2(),
