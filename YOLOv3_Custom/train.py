@@ -25,7 +25,7 @@ import pdb
 
 
 
-def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler, writer, step):
+def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
     model.train()
     loop = tqdm(train_loader, leave=True)
     losses = []
@@ -82,11 +82,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, sc
         mean_loss = sum(losses) / len(losses)
         loop.set_postfix(loss=mean_loss)
 
-        writer.add_scalar("Training loss", mean_loss, global_step=step)
-        step += 1
-
-    scheduler.step(mean_loss)
-    return step
+    return mean_loss
 
 
 def main():
@@ -127,18 +123,18 @@ def main():
     val_step = 0
     for epoch in range(config.NUM_EPOCHS):
         print(f"Epoch:{epoch+1}")
-        train_step = train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors, scheduler, writer, train_step)
+        train_mean_loss = train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors)
+        scheduler.step(train_mean_loss)
+        writer.add_scalar("Training loss", train_mean_loss, global_step=train_step)
+        train_step += 1
 
-
-        # print(f"Currently epoch {epoch}")
-        # print("On Train Eval loader:")
-        # check_class_accuracy(model, train_eval_loader, threshold=config.CONF_THRESHOLD)
-        # print("On Train loader:")
-        # check_class_accuracy(model, train_loader, threshold=config.CONF_THRESHOLD)
 
         if (epoch+1) % 5 == 0:
             print("On Test loader:")
-            val_step = check_class_accuracy(model, loss_fn, test_loader, scaled_anchors, writer, val_step, threshold=config.CONF_THRESHOLD)
+            valid_mean_loss = check_class_accuracy(model, loss_fn, test_loader, scaled_anchors, threshold=config.CONF_THRESHOLD)
+            writer.add_scalar("validation loss", valid_mean_loss, global_step=val_step)
+            val_step += 1
+
 
             pred_boxes, true_boxes = get_evaluation_bboxes(
                 test_loader,
