@@ -162,7 +162,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
     parser.add_argument('--batch-size', type=int, default=3, help='total batch size for all GPUs')
-    # parser.add_argument('--img-size', type=int, default=416, help='[train, test] image sizes')
+    parser.add_argument('--img-size', type=int, default=416, help='[train, test] image sizes')
     # parser.add_argument('--num-classes', type=int, default=11, help='number of classes')
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
     # parser.add_argument('--weight-decay', type=float, default=1e-4, help='l2 normalization')
@@ -186,6 +186,7 @@ if __name__ == "__main__":
         config.BATCH_SIZE = opt.batch_size
         config.LEARNING_RATE = opt.lr
         config.NUM_EPOCHS = opt.epochs
+        config.IMAGE_SIZE = opt.img_size
 
 
     torch.backends.cudnn.benchmark = True  # 32batch size에서 epoch당 약 6분 차이남
