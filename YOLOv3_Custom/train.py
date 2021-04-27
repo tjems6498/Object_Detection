@@ -188,7 +188,6 @@ if __name__ == "__main__":
         config.NUM_EPOCHS = opt.epochs
 
 
-    seed_everything()
     torch.backends.cudnn.benchmark = True  # 32batch size에서 epoch당 약 6분 차이남
     '''
     내장된 cudnn 자동 튜너를 활성화하여, 하드웨어에 맞게 사용할 최상의 알고리즘(텐서 크기나 conv 연산에 맞게?)을 찾는다.

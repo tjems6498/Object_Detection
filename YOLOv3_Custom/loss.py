@@ -23,7 +23,7 @@ class YOLOLoss(nn.Module):
         self.lambda_class = 1
         self.lambda_noobj = 10
         self.lambda_obj = 1
-        self.lambda_box = 10
+        self.lambda_box = 1
 
     def forward(self, predictions, target, anchors):  # prediction:(N, 3, 13, 13, 17), target:(n,3,13,13,6)
         # Check where obj and noobj (we ignore if target == -1)
@@ -60,14 +60,17 @@ class YOLOLoss(nn.Module):
         # ======================== #
 
         predictions[..., 1:3] = self.sigmoid(predictions[..., 1:3])  # x,y coordinates
-        target[..., 3:5] = torch.log(  # tw = log(Bw/Pw)
-            (1e-16 + target[..., 3:5] / anchors)  # 분자가 0이 됨을 막기 위함
-        )  # prediction의 tw,th를 bw,bh로 할 수 있지만 target을 오히려 역으로 바꿔 계산하면 better gradient flow를 갖는다고 한다.
+        # target[..., 3:5] = torch.log(  # tw = log(Bw/Pw)
+        #     (1e-16 + target[..., 3:5] / anchors)  # 분자가 0이 됨을 막기 위함
+        # )  # prediction의 tw,th를 bw,bh로 할 수 있지만 target을 오히려 역으로 바꿔 계산하면 better gradient flow를 갖는다고 한다.
 
-        box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])  # same dim
+        predictions[..., 3:5] = torch.exp(predictions[..., 3:5]) * anchors  # w,y
 
-        # giou_loss = generalized_intersection_over_union(predictions[..., 1:5][obj], target[..., 1:5][obj])  # GIoU loss
-        # box_loss = giou_loss
+
+
+        # box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])  # same dim
+        giou_loss = generalized_intersection_over_union(predictions[..., 1:5][obj], target[..., 1:5][obj])  # GIoU loss
+        box_loss = giou_loss
 
 
         # ================== #
