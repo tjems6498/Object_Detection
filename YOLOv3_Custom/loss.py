@@ -66,11 +66,12 @@ class YOLOLoss(nn.Module):
 
         predictions[..., 3:5] = torch.exp(predictions[..., 3:5]) * anchors  # w,y
 
-
-
         # box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])  # same dim
-        giou_loss = generalized_intersection_over_union(predictions[..., 1:5][obj], target[..., 1:5][obj])  # GIoU loss
-        box_loss = giou_loss
+
+        iou = 1 - intersection_over_union(box_preds[obj], target[..., 1:5][obj])
+        box_loss = iou.mean()
+        # giou_loss = generalized_intersection_over_union(predictions[..., 1:5][obj], target[..., 1:5][obj])  # GIoU loss
+        # box_loss = giou_loss
 
 
         # ================== #
