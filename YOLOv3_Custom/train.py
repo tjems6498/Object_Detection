@@ -155,7 +155,7 @@ def main():
 
             if config.SAVE_MODEL:
                 if best_map < mapval.item():
-                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth2.tar")
+                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
                     best_map = mapval.item()
 
 if __name__ == "__main__":

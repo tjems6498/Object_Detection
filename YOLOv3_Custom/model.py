@@ -207,17 +207,24 @@ class YOLOv3(nn.Module):
 
 
 if __name__ == '__main__':
+    from thop import profile
     num_classes = 11
-    IMAGE_SIZE = 416
+    IMAGE_SIZE = 448
     model = YOLOv3(num_classes=num_classes)
 
-    x = torch.randn((2,3,IMAGE_SIZE, IMAGE_SIZE))
+    x = torch.randn((1,3,IMAGE_SIZE, IMAGE_SIZE))
     out = model(x)
-    assert model(x)[0].shape == (2, 3, IMAGE_SIZE // 32, IMAGE_SIZE // 32, num_classes + 5)
-    assert model(x)[1].shape == (2, 3, IMAGE_SIZE // 16, IMAGE_SIZE // 16, num_classes + 5)
-    assert model(x)[2].shape == (2, 3, IMAGE_SIZE // 8, IMAGE_SIZE // 8, num_classes + 5)
+    # assert model(x)[0].shape == (1, 3, IMAGE_SIZE // 32, IMAGE_SIZE // 32, num_classes + 5)
+    # assert model(x)[1].shape == (1, 3, IMAGE_SIZE // 16, IMAGE_SIZE // 16, num_classes + 5)
+    # assert model(x)[2].shape == (1, 3, IMAGE_SIZE // 8, IMAGE_SIZE // 8, num_classes + 5)
     # summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
     # print(model)
+    macs, params = profile(model, inputs=(x,))  # 연산량, 파라미터 수
+    print("MACs:", macs)
+    print("params:", params)
+
+
+
     print(out[0].shape)
     print("Success!")
 

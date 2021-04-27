@@ -28,8 +28,7 @@ from backbone.darknet53 import darknet53_model
 #
 # # # model2.load_state_dict(check_point['state_dict'], strict=False)
 # # print(model2.state_dict()['conv1.layers.0.weight'])
-#
-#
+
 import cv2
 import torch
 import argparse
@@ -45,6 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--num-classes', type=int, default=11, help='')
     parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs')
     opt = parser.parse_args()
+    colors = [[np.random.randint(0, 255) for _ in range(3)] for _ in range(11)]
 
     torch.backends.cudnn.benchmark = True
     model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     scaled_anchors = torch.tensor(config.ANCHORS) * torch.tensor(S).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)  # (3, 3, 2)
     scaled_anchors = scaled_anchors.to(config.DEVICE)
 
-    frame = cv2.imread('grapes.jpg')
+    frame = cv2.imread('2.jpg')
     frame = cv2.resize(frame, (416, 416))
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     img = torch.from_numpy(img.transpose(2,0,1)).to(config.DEVICE)  # 차원변경 + tensor + cuda
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     print(len(boxes))
     # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
 
-    image = show_image(frame, boxes)
+    image = show_image(frame, boxes,colors)
 
     cv2.imshow('fruit_detect', image)
 
