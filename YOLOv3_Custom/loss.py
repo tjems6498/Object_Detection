@@ -35,7 +35,7 @@ class YOLOLoss(nn.Module):
         # ======================= #
         #   FOR NO OBJECT LOSS    #
         # ======================= #
-        pdb.set_trace()
+
         no_object_loss = self.bce(
             (predictions[..., 0:1][noobj]), (target[..., 0:1][noobj])  # target 이미지에 object가 없는 위치를 indexing
         )
