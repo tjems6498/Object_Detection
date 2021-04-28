@@ -234,6 +234,7 @@ def test():
 
         boxes = nms(boxes, iou_threshold=1, threshold=0.7, box_format='midpoint')
         print(boxes)
+        # pdb.set_trace()
 
         ''' img show'''
         inp = x[0].cpu().numpy().transpose((1, 2, 0))
@@ -242,6 +243,8 @@ def test():
         inp = std * inp + mean
         inp = np.clip(inp, 0, 1)
         plt.imshow(inp)
+        for box in boxes:
+            plt.title(config.CLASSES[int(box[0])])
         plt.show()
 
 

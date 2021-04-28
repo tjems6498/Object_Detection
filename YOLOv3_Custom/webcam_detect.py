@@ -14,13 +14,14 @@ cap = cv2.VideoCapture(0)
 
 torch.backends.cudnn.benchmark = True
 model = YOLOv3(num_classes=config.NUM_CLASSES, backbone='darknet53').to(config.DEVICE)
-checkpoint = torch.load('checkpoint.pth3.tar', map_location=config.DEVICE)
+checkpoint = torch.load('checkpoint.pth8.tar', map_location=config.DEVICE)
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
 
 colors = [[np.random.randint(0, 255) for _ in range(3)] for _ in range(11)]
 S = [13, 26, 52]
+
 scaled_anchors = torch.tensor(config.ANCHORS) * torch.tensor(S).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)  # (3, 3, 2)
 scaled_anchors = scaled_anchors.to(config.DEVICE)
 while True:

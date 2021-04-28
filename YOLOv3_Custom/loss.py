@@ -21,9 +21,9 @@ class YOLOLoss(nn.Module):
 
         # Constants signifying how much to pay for each respectivve part of the loss
         self.lambda_class = 1
-        self.lambda_noobj = 10
+        self.lambda_noobj = 0.5
         self.lambda_obj = 1
-        self.lambda_box = 10
+        self.lambda_box = 5
 
     def forward(self, predictions, target, anchors):  # prediction:(N, 3, 13, 13, 17), target:(n,3,13,13,6)
         # Check where obj and noobj (we ignore if target == -1)
@@ -64,7 +64,7 @@ class YOLOLoss(nn.Module):
 
         # predictions[..., 3:5] = torch.exp(predictions[..., 3:5]) * anchors  # w,y
 
-        box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])  # same dim
+        box_loss = self.mse(predictions[..., 1:5][obj], target[..., 1:5][obj])  # have to same dim
 
         # iou = 1 - intersection_over_union(predictions[..., 1:5][obj], target[..., 1:5][obj])
         # box_loss = iou.mean()
