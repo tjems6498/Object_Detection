@@ -126,8 +126,11 @@ if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = darknet53_model(device, '../darknet53_pretrained.pth.tar')
     inputs = torch.rand((4, 3, 416, 416))
-    outputs = model(inputs)
-    # assert outputs.shape == (4, 1000)
+    outputs, concat1, concat2 = model(inputs)
+
+    print(outputs.shape)
+    print(concat1.shape)
+    print(concat2.shape)
     print("Success!!")
     # print(model)
-    summary.summary(model, input_size=(3, 416, 416), device='cpu')
+    # summary.summary(model, input_size=(3, 416, 416), device='cpu')

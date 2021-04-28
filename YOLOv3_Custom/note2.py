@@ -18,8 +18,8 @@ import os
 # # print(loss)
 #
 # print(mse(pr_bbox, gt_bbox))
-img_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\train\\images'
-label_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\train\\labels'
+img_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\valid\\images'
+label_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\valid\\labels'
 
 img = os.listdir(img_path)
 label = os.listdir(label_path)

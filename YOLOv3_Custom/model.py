@@ -4,6 +4,7 @@ import torch.nn as nn
 import pdb
 import torchsummary as summary
 from backbone.darknet53 import darknet53_model
+from backbone.CSPDarknet53 import csp_darknet_53
 import config as cf
 
 
@@ -102,18 +103,18 @@ class ScalePrediction(nn.Module):
 
 
 class YOLOv3(nn.Module):
-    def __init__(self, in_channels=1024, num_classes=4, backbone='darknet53', pretrained_weight='darknet53_pretrained.pth.tar'):
+    def __init__(self, in_channels=1024, num_classes=11, backbone='darknet53', pretrained_weight='darknet53_pretrained.pth.tar'):
         super().__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.backbone = backbone
         if backbone == 'darknet53':  # backbone (pretrained or not)
             self.backbone_model = darknet53_model(cf.DEVICE, pretrained_weight)
+        elif backbone == 'cspdarknet53':
+            self.backbone_model = csp_darknet_53(down_pretrained_weight=False)
 
         self.layers = self._create_conv_layers()  # head layers
         self._initialize_weights()  # head만 initialize
-
-
 
     def _create_conv_layers(self):
         layers = nn.ModuleList()
@@ -159,10 +160,9 @@ class YOLOv3(nn.Module):
         outputs = []  # for each scale
         route_connections = []
 
-        if self.backbone == 'darknet53':
-            x, concat1, concat2 = self.backbone_model(x)
-            route_connections.append(concat1)
-            route_connections.append(concat2)
+        x, concat1, concat2 = self.backbone_model(x)
+        route_connections.append(concat1)
+        route_connections.append(concat2)
 
         for layer in self.layers:
             if isinstance(layer, ScalePrediction):
@@ -173,7 +173,6 @@ class YOLOv3(nn.Module):
 
             # if isinstance(layer, ResidualBlock) and layer.num_repeats == 8:
             #     route_connections.append(x)  # 값 저장
-
 
             if isinstance(layer, nn.Upsample):
                 # upsample 한 후의 결과와 route_connections 맨 뒤에 저장된 값과 concat
@@ -209,8 +208,8 @@ class YOLOv3(nn.Module):
 if __name__ == '__main__':
     from thop import profile
     num_classes = 11
-    IMAGE_SIZE = 448
-    model = YOLOv3(num_classes=num_classes)
+    IMAGE_SIZE = 416
+    model = YOLOv3(num_classes=num_classes, backbone='cspdarknet53')
 
     x = torch.randn((1,3,IMAGE_SIZE, IMAGE_SIZE))
     out = model(x)
@@ -219,9 +218,9 @@ if __name__ == '__main__':
     # assert model(x)[2].shape == (1, 3, IMAGE_SIZE // 8, IMAGE_SIZE // 8, num_classes + 5)
     # summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
     # print(model)
-    macs, params = profile(model, inputs=(x,))  # 연산량, 파라미터 수
-    print("MACs:", macs)
-    print("params:", params)
+    # macs, params = profile(model, inputs=(x,))  # 연산량, 파라미터 수
+    # print("MACs:", macs)
+    # print("params:", params)
 
 
 
