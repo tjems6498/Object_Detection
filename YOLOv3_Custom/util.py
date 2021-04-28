@@ -421,7 +421,7 @@ def show_image(image, boxes, colors):
         x2 = box[2] + (box[4] // 2)
         y2 = box[3] + (box[5] // 2)
         cv2.rectangle(image, (x1,y1),(x2,y2), color=colors[class_pred], thickness=1, lineType=cv2.LINE_AA)
-        cv2.putText(image, class_labels[class_pred], (x1,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, lineType=cv2.LINE_AA)
+        cv2.putText(image, f'{class_labels[class_pred]} {prob_score}', (x1,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, lineType=cv2.LINE_AA)
         # cv2.putText(image, prob_score, (x1+60,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, lineType=cv2.LINE_AA)
 
     image = cv2.resize(image, (640, 480))

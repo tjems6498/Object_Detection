@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     torch.backends.cudnn.benchmark = True
     model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
-    checkpoint = torch.load('checkpoint.pth3.tar', map_location=config.DEVICE)
+    checkpoint = torch.load('checkpoint.pth6.tar', map_location=config.DEVICE)
     model.load_state_dict(checkpoint['state_dict'])
 
     model.eval()
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     scaled_anchors = torch.tensor(config.ANCHORS) * torch.tensor(S).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)  # (3, 3, 2)
     scaled_anchors = scaled_anchors.to(config.DEVICE)
 
-    frame = cv2.imread('3.jpg')
+    frame = cv2.imread('4.jpg')
     frame = cv2.resize(frame, (416, 416))
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     img = torch.from_numpy(img.transpose(2,0,1)).to(config.DEVICE)  # 차원변경 + tensor + cuda

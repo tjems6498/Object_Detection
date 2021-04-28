@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import pdb
 import torchsummary
 
+# Mish: https://eehoeskrap.tistory.com/440
 class Mish(nn.Module):
     def __init__(self):
         super(Mish, self).__init__()
@@ -42,9 +43,9 @@ class ResidualBlock(nn.Module):
         return Mish()(out)
 
 
-# Downsample conv + Residual block  with CSP
+# Downsample conv + Residual block with CSP
 class CSPFirst(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels):  # 32, 64
         super(CSPFirst, self).__init__()
         self.dsample = BN_Conv_Mish(in_channels, out_channels, 3, 2, 1)
         self.trans_0 = BN_Conv_Mish(out_channels, out_channels, 1, 1, 0)

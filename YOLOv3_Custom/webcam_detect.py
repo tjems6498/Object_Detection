@@ -10,17 +10,11 @@ import pdb
 import time
 
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--num-classes', type=int, default=11, help='')
-parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs')
-opt = parser.parse_args()
-
 cap = cv2.VideoCapture(0)
 
 torch.backends.cudnn.benchmark = True
 model = YOLOv3(num_classes=config.NUM_CLASSES, backbone='darknet53').to(config.DEVICE)
-checkpoint = torch.load('checkpoint_pth5.tar', map_location=config.DEVICE)
+checkpoint = torch.load('checkpoint.pth2.tar', map_location=config.DEVICE)
 model.load_state_dict(checkpoint['state_dict'])
 
 model.eval()
@@ -44,7 +38,7 @@ while True:
         output = model(img)
 
     boxes = []
-    for i in range(output[0].shape[1]):  # y[0].shape : (batch, 3, 13, 13, 6)
+    for i in range(3):
         anchor = scaled_anchors[i]  # tensor(3, 2)
         # print(anchor.shape)
         # print(output[i].shape)
