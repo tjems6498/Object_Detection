@@ -73,6 +73,8 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
             #     + mixup_criterion(loss_fn, out[2], y_a2, y_b2, lam, scaled_anchors[2])  # 52x52
             # )
 
+        pdb.set_trace()
+
         losses.append(loss.item())
         optimizer.zero_grad()
         scaler.scale(loss).backward()
@@ -112,7 +114,7 @@ def main():
     if config.LOAD_MODEL:
         print("Model Loading!")
         load_checkpoint(
-            'checkpoint.pth.tar', model, optimizer
+            'checkpoint.pth8.tar', model, optimizer
         )
 
     scaled_anchors = (
@@ -154,14 +156,14 @@ def main():
 
             if config.SAVE_MODEL:
                 if best_map < mapval.item():
-                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
+                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth")
                     best_map = mapval.item()
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     # parser.add_argument('--workers', type=int, default=8, help='maximum number of dataloader workers')
-    parser.add_argument('--batch-size', type=int, default=3, help='total batch size for all GPUs')
+    parser.add_argument('--batch-size', type=int, default=2, help='total batch size for all GPUs')
     # parser.add_argument('--img-size', type=int, default=416, help='[train, test] image sizes')
     # parser.add_argument('--num-classes', type=int, default=11, help='number of classes')
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
