@@ -73,8 +73,6 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
             #     + mixup_criterion(loss_fn, out[2], y_a2, y_b2, lam, scaled_anchors[2])  # 52x52
             # )
 
-        pdb.set_trace()
-
         losses.append(loss.item())
         optimizer.zero_grad()
         scaler.scale(loss).backward()
