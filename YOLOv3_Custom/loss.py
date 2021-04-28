@@ -22,7 +22,7 @@ class YOLOLoss(nn.Module):
         # Constants signifying how much to pay for each respectivve part of the loss
         self.lambda_class = 1
         self.lambda_noobj = 10
-        self.lambda_obj = 10
+        self.lambda_obj = 1
         self.lambda_box = 10
 
     def forward(self, predictions, target, anchors):  # prediction:(N, 3, 13, 13, 17), target:(n,3,13,13,6)
@@ -31,7 +31,6 @@ class YOLOLoss(nn.Module):
         obj = target[..., 0] == 1
         noobj = target[..., 0] == 0
 
-
         # ======================= #
         #   FOR NO OBJECT LOSS    #
         # ======================= #
@@ -39,7 +38,6 @@ class YOLOLoss(nn.Module):
         no_object_loss = self.bce(
             (predictions[..., 0:1][noobj]), (target[..., 0:1][noobj])  # target 이미지에 object가 없는 위치를 indexing
         )
-
 
         # ==================== #
         #   FOR OBJECT LOSS    #

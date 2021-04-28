@@ -129,7 +129,6 @@ def main():
         writer.add_scalar("Training loss", train_mean_loss, global_step=train_step)
         train_step += 1
 
-
         if (epoch+1) % 5 == 0:
             print("On Test loader:")
             valid_mean_loss = check_class_accuracy(model, loss_fn, test_loader, scaled_anchors, threshold=config.CONF_THRESHOLD)
@@ -187,6 +186,7 @@ if __name__ == "__main__":
         config.BATCH_SIZE = opt.batch_size
         config.LEARNING_RATE = opt.lr
         config.NUM_EPOCHS = opt.epochs
+        config.LOAD_MODEL = opt.load_model
         # config.IMAGE_SIZE = opt.img_size
 
 

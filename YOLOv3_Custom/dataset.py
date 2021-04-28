@@ -1,5 +1,6 @@
 import config
 import numpy as np
+import matplotlib.pyplot as plt
 import os
 import torch
 import pdb
@@ -200,7 +201,7 @@ def test():
         root=config.VAL_DIR,
         anchors=anchors,
         transform=transform,
-        mosaic=True
+        mosaic=False
     )
     S = [13, 26, 52]
 
@@ -221,7 +222,6 @@ def test():
     '''
     loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
     for x, y in loader:
-
         boxes = []
 
         for i in range(y[0].shape[1]):  # y[0].shape : (batch, 3, 13, 13, 6)
@@ -234,7 +234,19 @@ def test():
 
         boxes = nms(boxes, iou_threshold=1, threshold=0.7, box_format='midpoint')
         print(boxes)
-        plot_image(x[0].permute(1,2,0).to('cpu'), boxes)
+
+        ''' img show'''
+        inp = x[0].cpu().numpy().transpose((1, 2, 0))
+        mean = np.array([0.6340, 0.5614, 0.4288])
+        std = np.array([0.2803, 0.2786, 0.3126])
+        inp = std * inp + mean
+        inp = np.clip(inp, 0, 1)
+        plt.imshow(inp)
+        plt.show()
+
+
+
+        # plot_image(x[0].permute(1,2,0).to('cpu'), boxes)
 
 
 if __name__ == "__main__":
