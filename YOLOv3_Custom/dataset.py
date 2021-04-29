@@ -201,7 +201,7 @@ def test():
         root=config.TRAIN_DIR,
         anchors=anchors,
         transform=transform,
-        mosaic=False
+        mosaic=True
     )
     S = [13, 26, 52]
 

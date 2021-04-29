@@ -39,7 +39,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         )
 
         # x, y_a, y_b, lam = mixup_data(x, y)
-
+        #
         # y_a0, y_a1, y_a2 = (
         #     y_a[0].to(config.DEVICE),
         #     y_a[1].to(config.DEVICE),
