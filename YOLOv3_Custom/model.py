@@ -5,6 +5,7 @@ import pdb
 import torchsummary as summary
 from backbone.darknet53 import darknet53_model
 from backbone.CSPDarknet53 import csp_darknet_53
+from backbone.CSPResNeXt50 import csp_resnext_50_32x4d
 import config as cf
 
 
@@ -108,10 +109,13 @@ class YOLOv3(nn.Module):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.backbone = backbone
+        print(f"backbone model : {backbone}")
         if backbone == 'darknet53':  # backbone (pretrained or not)
             self.backbone_model = darknet53_model(cf.DEVICE, pretrained_weight)
         elif backbone == 'cspdarknet53':
             self.backbone_model = csp_darknet_53(down_pretrained_weight=False)
+        elif backbone == 'cspresnet50':
+            self.backbone_model = csp_resnext_50_32x4d()
 
         self.layers = self._create_conv_layers()  # head layers
         self._initialize_weights()  # head만 initialize
@@ -209,7 +213,7 @@ if __name__ == '__main__':
     from thop import profile
     num_classes = 11
     IMAGE_SIZE = 416
-    model = YOLOv3(num_classes=num_classes, backbone='cspdarknet53')
+    model = YOLOv3(num_classes=num_classes, backbone='cspresnet50')
 
     x = torch.randn((1,3,IMAGE_SIZE, IMAGE_SIZE))
     out = model(x)

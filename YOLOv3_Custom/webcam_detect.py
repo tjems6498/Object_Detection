@@ -26,8 +26,8 @@ colors = [[0, 0, 255], [0, 138, 255],[0, 153, 207], [0, 74, 36], [135, 254, 186]
 S = [13, 26, 52]
 scaled_anchors = torch.tensor(config.ANCHORS) * torch.tensor(S).unsqueeze(1).unsqueeze(1).repeat(1, 3, 2)  # (3, 3, 2)
 scaled_anchors = scaled_anchors.to(config.DEVICE)
+pTime = 0
 while True:
-    # time.sleep(1)
     ret, frame = cap.read()
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     # image pre-processing before predict
@@ -48,13 +48,18 @@ while True:
             output[i], is_preds=True, S=output[i].shape[2], anchors=anchor
         )[0]  # batch 제외 (num_anchors * S * S, 6)
 
-    #boxes = non_max_suppression(boxes, iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD, box_format='midpoint')
+    # boxes = non_max_suppression(boxes, iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD, box_format='midpoint')
     boxes = my_non_max_suppression(boxes, iou_threshold=0.3, threshold=config.CONF_THRESHOLD, score_threshold=0.3, box_format='midpoint', method='linear')
 
     print(len(boxes))
     # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
 
     image = show_image(frame, boxes, colors)
+
+    cTime = time.time()
+    fps = 1 / (cTime - pTime)
+    pTime = cTime
+    cv2.putText(image, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_PLAIN, 3, (0, 255, 0), 2)
 
     cv2.imshow('fruit_detect', image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
