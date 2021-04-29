@@ -112,7 +112,7 @@ def main():
     if config.LOAD_MODEL:
         print("Model Loading!")
         load_checkpoint(
-            'checkpoint.pth8.tar', model, optimizer
+            'checkpoint.pth.tar', model, optimizer
         )
 
     scaled_anchors = (
