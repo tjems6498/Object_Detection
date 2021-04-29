@@ -154,7 +154,7 @@ def main():
 
             if config.SAVE_MODEL:
                 if best_map < mapval.item():
-                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth")
+                    save_checkpoint(model, optimizer, filename=f"checkpoint.pth.tar")
                     best_map = mapval.item()
 
 if __name__ == "__main__":
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     # parser.add_argument('--num-classes', type=int, default=11, help='number of classes')
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')
     # parser.add_argument('--weight-decay', type=float, default=1e-4, help='l2 normalization')
-    parser.add_argument('--epochs', type=int, default=200, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=150, help='number of epochs')
     parser.add_argument('--pretrained-weight', type=str, default='darknet53_pretrained.pth.tar', help='pretrained weights file name')
     parser.add_argument('--backbone', type=str, default='darknet53', help='backbone network')
     parser.add_argument('--load-model', action='store_true', help='load checkpoint')  # train시에 선언만 하면 True

@@ -262,8 +262,8 @@ def mean_average_precision(
         precisions = TP_cumsum / (TP_cumsum + FP_cumsum + epsilon)
         recalls = torch.cat((torch.tensor([0]), recalls))  # recall은 0부터 시작
         precisions = torch.cat((torch.tensor([1]), precisions))
-        ap = torch.trapz(precisions, recalls)
-        average_precisions.append(ap)  # trapz : y축, x축 을 주면 아래 면적 계산
+        ap = torch.trapz(precisions, recalls) # trapz : 아래 면적 계산
+        average_precisions.append(ap)
         print(f"{config.CLASSES[c]} AP: {ap:.2f}")
 
     return sum(average_precisions) / len(average_precisions)
@@ -410,7 +410,7 @@ def plot_image(image, boxes):
 
 def show_image(image, boxes, colors):
     class_labels = config.CLASSES
-    # print(colors)
+    image = cv2.resize(image, (416,416))
     for box in boxes:
         box[2:] = list(map(lambda x: int(x *416), box[2:]))
 
@@ -420,12 +420,13 @@ def show_image(image, boxes, colors):
         y1 = box[3] - (box[5] // 2)
         x2 = box[2] + (box[4] // 2)
         y2 = box[3] + (box[5] // 2)
-        cv2.rectangle(image, (x1,y1),(x2,y2), color=colors[class_pred], thickness=1, lineType=cv2.LINE_AA)
-        cv2.putText(image, f'{class_labels[class_pred]} {prob_score}', (x1,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, lineType=cv2.LINE_AA)
-        # cv2.putText(image, prob_score, (x1+60,y1), color=colors[class_pred], thickness=1, fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, lineType=cv2.LINE_AA)
 
-    image = cv2.resize(image, (640, 480))
+        cv2.rectangle(image, (x1, y1), (x2, y2), color=colors[class_pred], thickness=2, lineType=cv2.LINE_AA)
+        cv2.putText(image, f'{class_labels[class_pred]}{prob_score}', (x1,y1-5), 0, 0.5, color=colors[class_pred], thickness=1,
+                    lineType=cv2.LINE_AA)
 
+
+    image = cv2.resize(image, (480, 640))
     return image
 
 
@@ -574,9 +575,6 @@ def load_checkpoint(checkpoint_file, model, optimizer):
 
 
 def get_loaders():
-    '''
-    test dataset, dataloader 만들어야함
-    '''
     from dataset import YOLODataset
 
     IMAGE_SIZE = config.IMAGE_SIZE

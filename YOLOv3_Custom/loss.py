@@ -36,7 +36,7 @@ class YOLOLoss(nn.Module):
         # ======================= #
 
         no_object_loss = self.bce(
-            (predictions[..., 0:1][noobj]), (target[..., 0:1][noobj])  # target 이미지에 object가 없는 위치를 indexing
+            (predictions[..., 0:1][noobj]), (target[..., 0:1][noobj])  # target 이미지에 object가 없1는 위치를 indexing
         )
 
         # ==================== #

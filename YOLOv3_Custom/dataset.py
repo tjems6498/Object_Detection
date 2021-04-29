@@ -198,7 +198,7 @@ def test():
     transform = config.train_transforms
 
     dataset = YOLODataset(
-        root=config.VAL_DIR,
+        root=config.TRAIN_DIR,
         anchors=anchors,
         transform=transform,
         mosaic=False

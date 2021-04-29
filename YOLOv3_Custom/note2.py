@@ -18,15 +18,17 @@ import os
 # # print(loss)
 #
 # print(mse(pr_bbox, gt_bbox))
-img_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\valid\\images'
-label_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\valid\\labels'
+# img_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\valid\\images'
+# label_path = 'E:\\Computer Vision\\data\\project\\fruit_yolov3_remove\\valid\\labels'
+#
+# img = os.listdir(img_path)
+# label = os.listdir(label_path)
+#
+# for i in range(len(label)):
+#     if img[i].split('.')[0] != label[i].split('.')[0]:
+#         print(img[i], label[i])
+#         break
+#
 
-img = os.listdir(img_path)
-label = os.listdir(label_path)
-
-for i in range(len(label)):
-    if img[i].split('.')[0] != label[i].split('.')[0]:
-        print(img[i], label[i])
-        break
-
-
+checkpoint = torch.load('yolov3.pt')
+print(checkpoint['state_dict'])
