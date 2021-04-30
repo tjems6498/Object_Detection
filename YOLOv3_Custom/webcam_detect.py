@@ -48,8 +48,8 @@ while True:
             output[i], is_preds=True, S=output[i].shape[2], anchors=anchor
         )[0]  # batch 제외 (num_anchors * S * S, 6)
 
-    # boxes = non_max_suppression(boxes, iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD, box_format='midpoint')
-    boxes = my_non_max_suppression(boxes, iou_threshold=0.3, threshold=config.CONF_THRESHOLD, score_threshold=0.3, box_format='midpoint', method='linear')
+    #boxes = non_max_suppression(boxes, iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD, box_format='midpoint')
+    boxes = my_non_max_suppression(boxes, iou_threshold=0.3, threshold=config.CONF_THRESHOLD, score_threshold=0.3, box_format='midpoint', method='greedy')
 
     print(len(boxes))
     # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
@@ -59,7 +59,7 @@ while True:
     cTime = time.time()
     fps = 1 / (cTime - pTime)
     pTime = cTime
-    cv2.putText(image, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_PLAIN, 3, (0, 255, 0), 2)
+    cv2.putText(image, f'FPS: {int(fps)}', (10,30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0), 2,lineType=cv2.LINE_AA)
 
     cv2.imshow('fruit_detect', image)
     if cv2.waitKey(1) & 0xFF == ord('q'):
