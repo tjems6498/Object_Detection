@@ -161,7 +161,7 @@ class YOLOv3(nn.Module):
                     layers.append(nn.Upsample(scale_factor=2),)  # default = nearest
                     #  upsampling을 한 뒤에 config에 없는 concat을 진행을 하기 때문에
                     # config의 upsampling 다음에 나오는 Conv의 in_channels를 맞춰주기 위해 3을 곱함
-                    in_channels = in_channels
+                    in_channels = in_channels * 3
 
         return layers
 
@@ -169,12 +169,11 @@ class YOLOv3(nn.Module):
         outputs = []  # for each scale
         route_connections = []
 
-        # x, concat1, concat2 = self.backbone_model(x)
-        # route_connections.append(concat1)
-        # route_connections.append(concat2)
+        x, concat1, concat2 = self.backbone_model(x)
+        route_connections.append(concat1)
+        route_connections.append(concat2)
 
-        x = self.backbone_model(x)
-
+        # x = self.backbone_model(x)
         for layer in self.layers:
             if isinstance(layer, ScalePrediction):
                 outputs.append(layer(x))
@@ -182,13 +181,10 @@ class YOLOv3(nn.Module):
 
             x = layer(x)
 
-            # if isinstance(layer, ResidualBlock) and layer.num_repeats == 8:
-            #     route_connections.append(x)  # 값 저장
-
-            # if isinstance(layer, nn.Upsample):
-            #     # upsample 한 후의 결과와 route_connections 맨 뒤에 저장된 값과 concat
-            #     x = torch.cat([x, route_connections[-1]], dim=1)  # concatenate with channels  (n, 768, 26, 26), (n, 384, 52, 52)
-            #     route_connections.pop()
+            if isinstance(layer, nn.Upsample):
+                # upsample 한 후의 결과와 route_connections 맨 뒤에 저장된 값과 concat
+                x = torch.cat([x, route_connections[-1]], dim=1)  # concatenate with channels  (n, 768, 26, 26), (n, 384, 52, 52)
+                route_connections.pop()
 
         return outputs  # [(n, 3, 13, 13, 16), (n, 3, 26, 26, 16), (n, 3, 52, 52, 16)]
 
@@ -220,7 +216,7 @@ if __name__ == '__main__':
     from thop import profile
     num_classes = 11
     IMAGE_SIZE = 416
-    model = YOLOv3(num_classes=num_classes, backbone='cspdarknet53')
+    model = YOLOv3(num_classes=num_classes, backbone='darknet53')
 
     x = torch.randn((1,3,IMAGE_SIZE, IMAGE_SIZE))
     out = model(x)
