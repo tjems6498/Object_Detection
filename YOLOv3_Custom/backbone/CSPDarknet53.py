@@ -123,22 +123,22 @@ class CSP_DarkNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-    # def load_pretrained_layers(self):
-    #     state_dict = self.state_dict()
-    #     param_names = list(state_dict.keys())
-    #
-    #     import timm
-    #     pretrained_state_dict = timm.create_model('cspdarknet53', pretrained=True).state_dict()
-    #
-    #     pretrained_param_names = list(pretrained_state_dict.keys())
-    #
-    #     for i, param in enumerate(param_names[42:]):  # body~fc layer 전까지 weight 적용  108
-    #         state_dict[param] = pretrained_state_dict[pretrained_param_names[i+42]]
-    #         print(param)
-    #         print(state_dict[param].shape, '-----',pretrained_state_dict[pretrained_param_names[i+42]].shape)
-    #
-    #    # body1.trans_0.conv.weight
-    #     self.load_state_dict(state_dict)
+    def load_pretrained_layers(self):
+        state_dict = self.state_dict()
+        param_names = list(state_dict.keys())
+
+        import timm
+        pretrained_state_dict = timm.create_model('cspdarknet53', pretrained=True).state_dict()
+        pretrained_param_names = list(pretrained_state_dict.keys())
+
+        for i, param in enumerate(param_names):  # body~fc layer 전까지 weight 적용  108
+            state_dict[param] = pretrained_state_dict[pretrained_param_names]
+
+            print(param ,'------', pretrained_param_names)
+            print(state_dict[param].shape, '-----',pretrained_state_dict[pretrained_param_names].shape)
+
+       # body1.trans_0.conv.weight
+        self.load_state_dict(state_dict)
 
 
 
@@ -149,7 +149,7 @@ def csp_darknet_53( down_pretrained_weight=True):
 
 
 if __name__ =="__main__":
-    model = csp_darknet_53(down_pretrained_weight=False)
+    model = csp_darknet_53(down_pretrained_weight=True)
     out,concat1, concat2 = model(torch.rand(2, 3, 416, 416))
     print(out.shape)
     print(concat1.shape)
@@ -157,10 +157,15 @@ if __name__ =="__main__":
     # key = list(model.state_dict().keys())
     # print(key)
 
-    # import timm
-    # pre_model = timm.create_model('cspdarknet53', pretrained=True)
-    # pre_key = list(pre_model.state_dict().keys())
+    import timm
 
+
+    #
+    pre_model = timm.create_model('cspdarknet53', pretrained=True)
+    pre_key = list(pre_model.state_dict().keys())
+    print(len(pre_key))
+    # print(pre_model)
+    print(pre_model.CrossStage)
 
     # print(model)
     # torchsummary.summary(pre_model, input_size=(3, 416, 416), device='cpu')

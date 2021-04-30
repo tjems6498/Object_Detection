@@ -40,15 +40,12 @@ import time
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--num-classes', type=int, default=11, help='')
-    parser.add_argument('--batch-size', type=int, default=1, help='total batch size for all GPUs')
-    opt = parser.parse_args()
+
     colors = [[np.random.randint(0, 255) for _ in range(3)] for _ in range(11)]
 
     torch.backends.cudnn.benchmark = True
     model = YOLOv3(num_classes=config.NUM_CLASSES).to(config.DEVICE)
-    checkpoint = torch.load('checkpoint.pth6.tar', map_location=config.DEVICE)
+    checkpoint = torch.load('checkpoint.pth.tar', map_location=config.DEVICE)
     model.load_state_dict(checkpoint['state_dict'])
 
     model.eval()
@@ -66,7 +63,6 @@ if __name__ == '__main__':
         img = img.unsqueeze(0)  # 1 batch
 
     output = model(img)
-#
     boxes = []
     for i in range(output[0].shape[1]):  # y[0].shape : (batch, 3, 13, 13, 6)
         anchor = scaled_anchors[i]  # tensor(3, 2)
@@ -83,6 +79,4 @@ if __name__ == '__main__':
     image = show_image(frame, boxes,colors)
 
     cv2.imshow('fruit_detect', image)
-
     cv2.waitKey(0)
-

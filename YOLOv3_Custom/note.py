@@ -12,8 +12,8 @@ from PIL import Image
 from skimage.measure import compare_ssim
 
 # 중복검사
-root = 'E:\\Computer Vision\\data\\project\\pineapple'
-id_list = os.listdir('E:\\Computer Vision\\data\\project\\pineapple')
+root = 'C:\\Users\\hong\\Desktop\\레몬'
+id_list = os.listdir('C:\\Users\\hong\\Desktop\\레몬')
 image_list = []
 for i in range(len(id_list)):
     try:

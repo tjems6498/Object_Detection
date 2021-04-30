@@ -113,8 +113,10 @@ class YOLOv3(nn.Module):
         if backbone == 'darknet53':  # backbone (pretrained or not)
             self.backbone_model = darknet53_model(cf.DEVICE, pretrained_weight)
         elif backbone == 'cspdarknet53':
-            self.backbone_model = csp_darknet_53(down_pretrained_weight=False)
-        elif backbone == 'cspresnet50':
+            import timm
+            self.backbone_model = timm.create_model('cspdarknet53', pretrained=True)
+            # self.backbone_model = csp_darknet_53(down_pretrained_weight=False)
+        elif backbone == 'cspresnext50':
             self.backbone_model = csp_resnext_50_32x4d()
 
         self.layers = self._create_conv_layers()  # head layers
@@ -164,9 +166,11 @@ class YOLOv3(nn.Module):
         outputs = []  # for each scale
         route_connections = []
 
-        x, concat1, concat2 = self.backbone_model(x)
-        route_connections.append(concat1)
-        route_connections.append(concat2)
+        # x, concat1, concat2 = self.backbone_model(x)
+        # route_connections.append(concat1)
+        # route_connections.append(concat2)
+
+        x = self.backbone_model(x)
 
         for layer in self.layers:
             if isinstance(layer, ScalePrediction):
@@ -178,10 +182,10 @@ class YOLOv3(nn.Module):
             # if isinstance(layer, ResidualBlock) and layer.num_repeats == 8:
             #     route_connections.append(x)  # 값 저장
 
-            if isinstance(layer, nn.Upsample):
-                # upsample 한 후의 결과와 route_connections 맨 뒤에 저장된 값과 concat
-                x = torch.cat([x, route_connections[-1]], dim=1)  # concatenate with channels  (n, 768, 26, 26), (n, 384, 52, 52)
-                route_connections.pop()
+            # if isinstance(layer, nn.Upsample):
+            #     # upsample 한 후의 결과와 route_connections 맨 뒤에 저장된 값과 concat
+            #     x = torch.cat([x, route_connections[-1]], dim=1)  # concatenate with channels  (n, 768, 26, 26), (n, 384, 52, 52)
+            #     route_connections.pop()
 
         return outputs  # [(n, 3, 13, 13, 16), (n, 3, 26, 26, 16), (n, 3, 52, 52, 16)]
 

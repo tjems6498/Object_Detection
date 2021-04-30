@@ -29,6 +29,8 @@ import os
 #         print(img[i], label[i])
 #         break
 #
+from torch.utils.serialization import load_lua
 
-checkpoint = torch.load('yolov3.pt')
-print(checkpoint['state_dict'])
+x = load_lua('x.t7')
+checkpoint = torch.load('resnext_50_32x4d.t7')
+print(checkpoint)

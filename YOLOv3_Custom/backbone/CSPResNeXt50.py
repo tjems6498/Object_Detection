@@ -116,10 +116,18 @@ def csp_resnext_50_32x4d():
 
 if __name__ == '__main__':
     model = csp_resnext_50_32x4d()
-
     out, concat1, concat2 = model(torch.rand((2, 3, 416, 416)))
     print(out.shape)
     print(concat1.shape)
     print(concat2.shape)
+
+
+    print(len(model.state_dict().keys()))
     # print(model)
-    summary(model, input_size=(3, 416, 416), device='cpu')
+    # summary(model, input_size=(3, 416, 416), device='cpu')
+
+    import timm
+
+    pre_model = timm.create_model('cspresnext50', pretrained=True)
+    pre_key = list(pre_model.state_dict().keys())
+    print(len(pre_key))
