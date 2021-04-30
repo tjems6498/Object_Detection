@@ -149,7 +149,7 @@ def csp_darknet_53( down_pretrained_weight=True):
 
 
 if __name__ =="__main__":
-    model = csp_darknet_53(down_pretrained_weight=True)
+    model = csp_darknet_53(down_pretrained_weight=False)
     out,concat1, concat2 = model(torch.rand(2, 3, 416, 416))
     print(out.shape)
     print(concat1.shape)
@@ -160,12 +160,13 @@ if __name__ =="__main__":
     import timm
 
 
-    #
+
     pre_model = timm.create_model('cspdarknet53', pretrained=True)
-    pre_key = list(pre_model.state_dict().keys())
-    print(len(pre_key))
-    # print(pre_model)
-    print(pre_model.CrossStage)
+    torchsummary.summary(pre_model, input_size=(3, 416, 416), device='cpu')
+    # pre_key = list(pre_model.state_dict().keys())
+    # print(len(pre_key))
+    # # print(pre_model)
+    # print(pre_model.CrossStage)
 
     # print(model)
     # torchsummary.summary(pre_model, input_size=(3, 416, 416), device='cpu')

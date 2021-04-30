@@ -114,7 +114,10 @@ class YOLOv3(nn.Module):
             self.backbone_model = darknet53_model(cf.DEVICE, pretrained_weight)
         elif backbone == 'cspdarknet53':
             import timm
-            self.backbone_model = timm.create_model('cspdarknet53', pretrained=True)
+            pre_model = timm.create_model('cspdarknet53', pretrained=True)
+            pre_model.head = nn.Sequential()
+            self.backbone_model = pre_model
+
             # self.backbone_model = csp_darknet_53(down_pretrained_weight=False)
         elif backbone == 'cspresnext50':
             self.backbone_model = csp_resnext_50_32x4d()
@@ -158,7 +161,7 @@ class YOLOv3(nn.Module):
                     layers.append(nn.Upsample(scale_factor=2),)  # default = nearest
                     #  upsampling을 한 뒤에 config에 없는 concat을 진행을 하기 때문에
                     # config의 upsampling 다음에 나오는 Conv의 in_channels를 맞춰주기 위해 3을 곱함
-                    in_channels = in_channels * 3
+                    in_channels = in_channels
 
         return layers
 
@@ -217,7 +220,7 @@ if __name__ == '__main__':
     from thop import profile
     num_classes = 11
     IMAGE_SIZE = 416
-    model = YOLOv3(num_classes=num_classes, backbone='cspresnet50')
+    model = YOLOv3(num_classes=num_classes, backbone='cspdarknet53')
 
     x = torch.randn((1,3,IMAGE_SIZE, IMAGE_SIZE))
     out = model(x)
