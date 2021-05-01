@@ -11,7 +11,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 seed_everything()  # deterministic behavior
 NUM_WORKERS = 2  # colab
 BATCH_SIZE = 2
-IMAGE_SIZE = 416
+IMAGE_SIZE = 480
 NUM_CLASSES = 11
 CLASSES = ['apple', 'orange', 'pear', 'watermelon', 'durian', 'lemon', 'grapes', 'pineapple', 'dragon fruit', 'oriental melon', 'melon']
 LEARNING_RATE = 0.001
@@ -78,7 +78,7 @@ train_transforms = A.Compose(
         # A.Posterize(p=0.1),
         # A.ToGray(p=0.1),
 
-        # A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255,),
+        A.Normalize(mean=[0.6340, 0.5614, 0.4288], std=[0.2803, 0.2786, 0.3126], max_pixel_value=255,),
         ToTensorV2(),
 
     ],
@@ -90,7 +90,7 @@ test_transforms = A.Compose(
         A.PadIfNeeded(
             min_height=IMAGE_SIZE, min_width=IMAGE_SIZE, border_mode=cv2.BORDER_CONSTANT
         ),
-        # A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255,),  # 이미지 Normalize
+        A.Normalize(mean=[0.6340, 0.5614, 0.4288], std=[0.2803, 0.2786, 0.3126], max_pixel_value=255,),  # 이미지 Normalize
         ToTensorV2(),
     ],
     bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[]),
