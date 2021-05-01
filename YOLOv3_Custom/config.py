@@ -78,7 +78,7 @@ train_transforms = A.Compose(
         # A.Posterize(p=0.1),
         # A.ToGray(p=0.1),
 
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255,),
+        # A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255,),
         ToTensorV2(),
 
     ],
@@ -90,7 +90,7 @@ test_transforms = A.Compose(
         A.PadIfNeeded(
             min_height=IMAGE_SIZE, min_width=IMAGE_SIZE, border_mode=cv2.BORDER_CONSTANT
         ),
-        A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255,),  # 이미지 Normalize
+        # A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255,),  # 이미지 Normalize
         ToTensorV2(),
     ],
     bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[]),
