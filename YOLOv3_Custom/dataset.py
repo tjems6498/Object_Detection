@@ -100,7 +100,7 @@ def mosaic(root, idxs, output_size, scale_range, filter_scale=1 / 50):
 
 
 class YOLODataset(Dataset):
-    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None, mosaic=False):
+    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None, mosaic=True):
         self.ids = readId(root)
         self.root = root
         self.image_size = image_size

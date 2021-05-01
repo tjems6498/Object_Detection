@@ -11,7 +11,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 seed_everything()  # deterministic behavior
 NUM_WORKERS = 2  # colab
 BATCH_SIZE = 2
-IMAGE_SIZE = 480
+IMAGE_SIZE = 416
 NUM_CLASSES = 11
 CLASSES = ['apple', 'orange', 'pear', 'watermelon', 'durian', 'lemon', 'grapes', 'pineapple', 'dragon fruit', 'oriental melon', 'melon']
 LEARNING_RATE = 0.001

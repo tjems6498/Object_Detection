@@ -597,7 +597,8 @@ def get_loaders():
         root=config.VAL_DIR,
         anchors=config.ANCHORS,
         S=[IMAGE_SIZE // 32, IMAGE_SIZE // 16, IMAGE_SIZE // 8],
-        transform=config.test_transforms
+        transform=config.test_transforms,
+        mosaic=False
     )
     test_loader = DataLoader(
         dataset=test_dataset,
