@@ -60,13 +60,13 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         # plt.show()
         # pdb.set_trace()
 
-        with torch.cuda.amp.autocast():
-            out = model(x)  # [(2, 3, 13, 13, 16), (2, 3, 26, 26, 16), (2, 3, 52, 52, 16)]
-            loss = (
-                loss_fn(out[0], y0, scaled_anchors[0])
-                + loss_fn(out[1], y1, scaled_anchors[1])
-                + loss_fn(out[2], y2, scaled_anchors[2])
-            )
+        # with torch.cuda.amp.autocast():
+        out = model(x)  # [(2, 3, 13, 13, 16), (2, 3, 26, 26, 16), (2, 3, 52, 52, 16)]
+        loss = (
+            loss_fn(out[0], y0, scaled_anchors[0])
+            + loss_fn(out[1], y1, scaled_anchors[1])
+            + loss_fn(out[2], y2, scaled_anchors[2])
+        )
             # loss = (
             #     mixup_criterion(loss_fn, out[0], y_a0, y_b0, lam, scaled_anchors[0])  # 13x13
             #     + mixup_criterion(loss_fn, out[1], y_a1, y_b1, lam, scaled_anchors[1])  # 26x26
@@ -75,9 +75,13 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
 
         losses.append(loss.item())
         optimizer.zero_grad()
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
+        # scaler.scale(loss).backward()
+        # scaler.step(optimizer)
+        # scaler.update()
+
+        loss.backward()
+        optimizer.step()
+
 
         # update progress bar
         mean_loss = sum(losses) / len(losses)
