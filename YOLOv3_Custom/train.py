@@ -95,7 +95,7 @@ def main():
     #     param.requires_grad = False
 
 
-    optimizer = optim.SGD(
+    optimizer = optim.Adam(
         model.parameters(), lr=config.LEARNING_RATE, weight_decay=config.WEIGHT_DECAY
     )
     loss_fn = YOLOLoss()
