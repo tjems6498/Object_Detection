@@ -22,7 +22,7 @@ class YOLOLoss(nn.Module):
         # Constants signifying how much to pay for each respectivve part of the loss
         self.lambda_class = 1
         self.lambda_noobj = 10
-        self.lambda_obj = 1
+        self.lambda_obj = 10
         self.lambda_box = 10
 
     def forward(self, predictions, target, anchors):  # prediction:(N, 3, 13, 13, 17), target:(n,3,13,13,6)
@@ -48,8 +48,8 @@ class YOLOLoss(nn.Module):
         # sigmoid(tx) + Cx 가 아닌 sigmoid(tx)만 있는 이유는 차원이 (N, 3, 13, 13, 17) 에서 이미 13x13으로 나누어져 있기 때문
         ious = intersection_over_union(box_preds[obj], target[..., 1:5][obj]).detach()  # 실제 박스와 예측이 얼마나 겹쳤는가
         # detach: gradient가 전파되지 않는 텐서생성
-        object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])  # mse 말고 bce한번 해보기
-        #object_loss = self.bce(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
+        #object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])  # mse 말고 bce한번 해보기
+        object_loss = self.bce(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
         # 내 생각 : 1을 예측하는 것이 아닌 true와 predict coordinate이 겹친정도(confidence)를 예측
         # 즉 object prob * IOU = confidence 가 0.8이고 에측값의 object prob가 0.4이면 0.4가 아닌 0.8이 되도록 학습을 진행시킴
 
