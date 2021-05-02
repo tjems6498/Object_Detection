@@ -39,7 +39,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         )
 
         # x, y_a, y_b, lam = mixup_data(x, y)
-        #
+        # #
         # y_a0, y_a1, y_a2 = (
         #     y_a[0].to(config.DEVICE),
         #     y_a[1].to(config.DEVICE),
@@ -51,9 +51,10 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
         #     y_b[2].to(config.DEVICE)
         # )
         # ''' img show'''
+        #
         # inp = x[1].cpu().numpy().transpose((1, 2, 0))
-        # mean = np.array([0.6340, 0.5614, 0.4288])
-        # std = np.array([0.2803, 0.2786, 0.3126])
+        # mean = np.array([0.6274, 0.5588, 0.4318])
+        # std = np.array([0.2747, 0.2731, 0.3063])
         # inp = std * inp + mean
         # inp = np.clip(inp, 0, 1)
         # plt.imshow(inp)
