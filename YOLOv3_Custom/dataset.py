@@ -100,7 +100,7 @@ def mosaic(root, idxs, output_size, scale_range, filter_scale=1 / 50):
 
 
 class YOLODataset(Dataset):
-    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None, mosaic=False):
+    def __init__(self, root, anchors, image_size=416, S=[13, 26, 52], C=4, transform=None, mosaic=True):
         self.ids = readId(root)
         self.root = root
         self.image_size = image_size
@@ -121,7 +121,7 @@ class YOLODataset(Dataset):
         if self.mosaic:
             idxs = [self.ids[idx]]  # 현재 뽑힌 인덱스
             [idxs.append(self.ids[random.randint(0, len(self.ids)-1)]) for _ in range(3)]  # 랜덤 인덱스 3개 더 추가
-            image, bboxes = mosaic(self.root, idxs, (416, 416), (0.3, 0.7), filter_scale=1 / 50)
+            image, bboxes = mosaic(self.root, idxs, (416, 416), (0.5, 0.5), filter_scale=1 / 50)
 
 
         else:
