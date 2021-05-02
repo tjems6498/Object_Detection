@@ -10,7 +10,7 @@ from util import cells_to_bboxes, non_max_suppression, show_image, my_non_max_su
 import pdb
 import time
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 torch.backends.cudnn.benchmark = True
 model = YOLOv3(num_classes=config.NUM_CLASSES, backbone='darknet53').to(config.DEVICE)

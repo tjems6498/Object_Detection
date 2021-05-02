@@ -145,6 +145,7 @@ class YOLODataset(Dataset):
             augmentations = self.transform(image=image, bboxes=bboxes)
             image = augmentations['image']
             bboxes = augmentations['bboxes']
+
         # Below assumes 3 scale predictions (as paper) and same num of anchors per scale
         # dim [(3,13,13,6),(3,26,26,6)(3,52,52,6)]  6 : (object_prob, x, y, w, h, class)
         targets = [torch.zeros((self.num_anchors//3, S, S, 6)) for S in self.S]

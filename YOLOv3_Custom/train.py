@@ -74,6 +74,8 @@ def train_fn(train_loader, model, optimizer, loss_fn, scaler, scaled_anchors):
             #     + mixup_criterion(loss_fn, out[2], y_a2, y_b2, lam, scaled_anchors[2])  # 52x52
             # )
 
+        # OHEM 추가해보기 ex) https://gist.github.com/erogol/c37628286f8efdb62b3cc87aad382f9e
+
         losses.append(loss.item())
         optimizer.zero_grad()
         scaler.scale(loss).backward()

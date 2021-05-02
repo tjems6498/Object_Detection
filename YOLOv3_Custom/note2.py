@@ -11,5 +11,4 @@ import numpy as np
 import os
 label1 = np.array([[0, 1, 0,0,150,150], [0,1,0,0,100,100]])
 print(np.full((label1.shape[0], 1), 0.4))
-
 print(np.hstack((label1, np.full((label1.shape[0], 1), 0.4))))
