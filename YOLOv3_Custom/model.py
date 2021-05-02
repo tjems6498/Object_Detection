@@ -173,7 +173,6 @@ class YOLOv3(nn.Module):
         route_connections.append(concat1)
         route_connections.append(concat2)
 
-        # x = self.backbone_model(x)
         for layer in self.layers:
             if isinstance(layer, ScalePrediction):
                 outputs.append(layer(x))
@@ -189,17 +188,6 @@ class YOLOv3(nn.Module):
         return outputs  # [(n, 3, 13, 13, 16), (n, 3, 26, 26, 16), (n, 3, 52, 52, 16)]
 
     def _initialize_weights(self):
-        # for m in self.layers.modules():
-        #     if isinstance(m, nn.Conv2d):
-        #         n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-        #         m.weight.data.normal_(0, math.sqrt(2. / n))
-
-        #         if m.bias is not None:
-        #             m.bias.data.zero_()
-
-        #     elif isinstance(m, nn.BatchNorm2d):
-        #         m.weight.data.fill_(1)
-        #         m.bias.data.zero_()
         for m in self.layers.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_uniform_(m.weight)
@@ -215,7 +203,7 @@ class YOLOv3(nn.Module):
 if __name__ == '__main__':
     from thop import profile
     num_classes = 11
-    IMAGE_SIZE = 416
+    IMAGE_SIZE = 480
     model = YOLOv3(num_classes=num_classes, backbone='darknet53')
 
     x = torch.randn((1,3,IMAGE_SIZE, IMAGE_SIZE))
@@ -225,9 +213,9 @@ if __name__ == '__main__':
     # assert model(x)[2].shape == (1, 3, IMAGE_SIZE // 8, IMAGE_SIZE // 8, num_classes + 5)
     # summary.summary(model, input_size=(3, 416, 416), device='cpu')  # Total params: 61,539,889
     # print(model)
-    # macs, params = profile(model, inputs=(x,))  # 연산량, 파라미터 수
-    # print("MACs:", macs)
-    # print("params:", params)
+    macs, params = profile(model, inputs=(x,))  # 연산량, 파라미터 수
+    print("MACs:", macs)
+    print("params:", params)
 
 
 
