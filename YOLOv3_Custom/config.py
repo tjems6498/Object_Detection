@@ -72,7 +72,8 @@ train_transforms = A.Compose(
         ),
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.2),
-        A.Blur(p=0.1),
+        A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.4),
+        #A.Blur(p=0.1),  # blur 빼고 brightness , contrast 추가해보
         # A.CLAHE(p=0.1),  # 이미지가 뭔가 진해지고 선명해짐 / Doc: Apply Contrast Limited Adaptive Histogram Equalization
         # A.Posterize(p=0.1),
         # A.ToGray(p=0.1),
