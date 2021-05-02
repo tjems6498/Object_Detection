@@ -8,7 +8,7 @@ from util import seed_everything
 DATASET = 'PASCAL_VOC'
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-seed_everything()  # deterministic behavior
+# seed_everything()  # deterministic behavior
 NUM_WORKERS = 2  # colab
 BATCH_SIZE = 2
 IMAGE_SIZE = 416

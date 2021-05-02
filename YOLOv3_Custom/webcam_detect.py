@@ -50,8 +50,8 @@ while True:
 
     #boxes = non_max_suppression(boxes, iou_threshold=config.NMS_IOU_THRESH, threshold=config.CONF_THRESHOLD, box_format='midpoint')
     boxes = my_non_max_suppression(boxes, iou_threshold=0.3, threshold=config.CONF_THRESHOLD, score_threshold=0.3, box_format='midpoint', method='greedy')
-
-    print(len(boxes))
+    boxes = [box for box in boxes if box[1] > 0.3]  # nms에서 0.0인 confidence가 안사라지는 박스들이 있음
+    # print(len(boxes))
     # boxes : [[class_pred, prob_score, x1, y1, x2, y2], ...]
 
     image = show_image(frame, boxes, colors)

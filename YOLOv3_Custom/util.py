@@ -419,7 +419,7 @@ def show_image(image, boxes, colors):
         y1 = box[3] - (box[5] // 2)
         x2 = box[2] + (box[4] // 2)
         y2 = box[3] + (box[5] // 2)
-
+        print(prob_score)
         cv2.rectangle(image, (x1, y1), (x2, y2), color=colors[class_pred], thickness=2, lineType=cv2.LINE_AA)
         cv2.putText(image, f'{class_labels[class_pred]}{prob_score}', (x1,y1-5), 0, 0.5, color=colors[class_pred], thickness=1,
                     lineType=cv2.LINE_AA)
