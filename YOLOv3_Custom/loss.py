@@ -50,8 +50,8 @@ class YOLOLoss(nn.Module):
         # detach: gradient가 전파되지 않는 텐서생성
 
 
-        object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])  # mse 말고 bce한번 해보기
-        #object_loss = self.bce(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
+        #object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])  # mse 말고 bce한번 해보기
+        object_loss = self.bce(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
 
 
 
