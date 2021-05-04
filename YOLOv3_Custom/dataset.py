@@ -243,14 +243,14 @@ def test():
         std = np.array([0.2803, 0.2786, 0.3126])
         inp = std * inp + mean
         inp = np.clip(inp, 0, 1)
-        plt.imshow(inp)
-        for box in boxes:
-            plt.title(config.CLASSES[int(box[0])])
-        plt.show()
+        # plt.imshow(inp)
+        # for box in boxes:
+        #     plt.title(config.CLASSES[int(box[0])])
+        # plt.show()
 
 
 
-        # plot_image(x[0].permute(1,2,0).to('cpu'), boxes)
+        plot_image(inp, boxes)
 
 
 if __name__ == "__main__":
