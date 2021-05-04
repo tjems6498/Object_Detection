@@ -178,7 +178,7 @@ if __name__ == "__main__":
     # parser.add_argument('--nms-iou-threshold', type=float, default=0.45, help=''
     opt = parser.parse_args()
 
-    if opt.batch_size > 16:  # colab에서만
+    if opt.batch_size > 8:  # colab에서만
         with open('data.yaml') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
 
