@@ -7,7 +7,7 @@ from util import seed_everything
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# seed_everything()  # deterministic behavior
+seed_everything()  # deterministic behavior
 NUM_WORKERS = 2  # colab
 BATCH_SIZE = 2
 IMAGE_SIZE = 416
@@ -77,8 +77,8 @@ train_transforms = A.Compose(
         # A.CLAHE(p=0.1),  # 이미지가 뭔가 진해지고 선명해짐 / Doc: Apply Contrast Limited Adaptive Histogram Equalization
         # A.Posterize(p=0.1),
         # A.ToGray(p=0.1),
-        A.Normalize(mean=[0.6340, 0.5614, 0.4288], std=[0.2803, 0.2786, 0.3126], max_pixel_value=255, ),  # 중간 데이터
-        #A.Normalize(mean=[0.6274, 0.5588, 0.4318], std=[0.2747, 0.2731, 0.3063], max_pixel_value=255,),  # 최종 데이터
+        #A.Normalize(mean=[0.6340, 0.5614, 0.4288], std=[0.2803, 0.2786, 0.3126], max_pixel_value=255, ),  # 중간 데이터
+        A.Normalize(mean=[0.6274, 0.5588, 0.4318], std=[0.2747, 0.2731, 0.3063], max_pixel_value=255,),  # 최종 데이터
         ToTensorV2(),
 
     ],
@@ -90,8 +90,8 @@ test_transforms = A.Compose(
         A.PadIfNeeded(
             min_height=IMAGE_SIZE, min_width=IMAGE_SIZE, border_mode=cv2.BORDER_CONSTANT
         ),
-        A.Normalize(mean=[0.6340, 0.5614, 0.4288], std=[0.2803, 0.2786, 0.3126], max_pixel_value=255, ),  # 중간 데이터
-        #A.Normalize(mean=[0.6274, 0.5588, 0.4318], std=[0.2747, 0.2731, 0.3063], max_pixel_value=255,),  # 최종 데이터
+        #A.Normalize(mean=[0.6340, 0.5614, 0.4288], std=[0.2803, 0.2786, 0.3126], max_pixel_value=255, ),  # 중간 데이터
+        A.Normalize(mean=[0.6274, 0.5588, 0.4318], std=[0.2747, 0.2731, 0.3063], max_pixel_value=255,),  # 최종 데이터
 
         ToTensorV2(),
     ],

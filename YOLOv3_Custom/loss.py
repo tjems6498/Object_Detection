@@ -21,7 +21,7 @@ class YOLOLoss(nn.Module):
 
         # Constants signifying how much to pay for each respectivve part of the loss
         self.lambda_class = 1
-        self.lambda_noobj = 0.5
+        self.lambda_noobj = 10
         self.lambda_obj = 10
         self.lambda_box = 10
 
@@ -50,8 +50,8 @@ class YOLOLoss(nn.Module):
         # detach: gradient가 전파되지 않는 텐서생성
 
 
-        object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])  # mse 말고 bce한번 해보기
-        # object_loss = self.bce(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
+        #object_loss = self.mse(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])  # mse 말고 bce한번 해보기
+        object_loss = self.bce(self.sigmoid(predictions[..., 0:1][obj]), ious * target[..., 0:1][obj])
 
 
 
